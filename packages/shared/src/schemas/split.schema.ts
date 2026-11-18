@@ -142,3 +142,6 @@ export interface SplitListDto {
   receivables: ReceivableDto[];
   receivablesTotal: number;
 }
+
+export const confirmDebtSchema = z.object({ walletId: idSchema.optional() }).strict();
+export type ConfirmDebtInput = z.infer<typeof confirmDebtSchema>;

@@ -1,15 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { Prisma } from '@prisma/client';
+import type { Prisma, Split } from '@prisma/client';
 import {
   calculateSplit,
   fromDateOnly,
   SplitCalcError,
   toDateOnly,
+  type ConfirmDebtInput,
   type CreateSplitInput,
   type SplitCalcResult,
   type SplitDetailDto,
   type SplitListDto,
 } from '@coinbook/shared';
+import { businessToday } from '../../common/clock';
 import { AppError } from '../../common/errors/app-error';
 import { generateShareToken } from '../../common/share-token';
 import { ENV, type Env } from '../../config/env';
@@ -170,6 +172,85 @@ export class SplitsService {
       { timeout: CREATE_TIMEOUT_MS },
     );
     return this.detail(userId, splitId);
+  }
+
+  async confirm(
+    userId: string,
+    splitId: string,
+    personId: string,
+    input: ConfirmDebtInput,
+  ): Promise<SplitDetailDto> {
+    const today = businessToday(this.env);
+    await this.prisma.$transaction(async (tx) => {
+      const split = await this.lockSplit(tx, userId, splitId);
+      const person = await tx.splitPerson.findFirst({
+        where: { id: personId, splitId, isOwner: false },
+      });
+      if (!person) throw AppError.notFound('Person');
+      const locked = await tx.$queryRaw<{ id: string }[]>`
+        SELECT id FROM "Debt" WHERE "personId" = ${personId}::uuid FOR UPDATE`;
+      if (locked.length === 0) throw AppError.notFound('Debt');
+      const debt = await tx.debt.findUniqueOrThrow({ where: { personId } });
+      if (debt.status === 'PAID') {
+        throw new AppError('DEBT_ALREADY_PAID', `${person.name} has already paid`);
+      }
+      const walletId = input.walletId ?? split.walletId;
+      const wallet = await tx.wallet.findFirst({ where: { id: walletId, userId } });
+      if (!wallet) throw AppError.notFound('Wallet');
+      if (wallet.isArchived) {
+        throw new AppError('WALLET_ARCHIVED', `Wallet ${wallet.name} is archived`);
+      }
+      const income = await tx.transaction.create({
+        data: {
+          userId,
+          type: 'INCOME',
+          amount: debt.amount,
+          walletId,
+          date: fromDateOnly(today),
+          description: `Patungan dari ${person.name}`,
+          source: 'SPLIT',
+        },
+      });
+      await tx.wallet.update({
+        where: { id: walletId },
+        data: { balance: { increment: debt.amount } },
+      });
+      await tx.debt.update({
+        where: { personId },
+        data: { status: 'PAID', confirmedAt: new Date(), walletId, transactionId: income.id },
+      });
+    });
+    return this.detail(userId, splitId);
+  }
+
+  async remove(userId: string, splitId: string): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const split = await this.lockSplit(tx, userId, splitId);
+      const paid = await tx.debt.count({
+        where: { person: { splitId }, status: 'PAID', amount: { gt: 0 } },
+      });
+      if (paid > 0) {
+        throw new AppError(
+          'DEBT_ALREADY_PAID',
+          'A split with confirmed payments cannot be deleted',
+        );
+      }
+      await tx.split.delete({ where: { id: splitId } });
+      if (split.expenseTransactionId) {
+        const expense = await tx.transaction.delete({ where: { id: split.expenseTransactionId } });
+        await tx.wallet.update({
+          where: { id: expense.walletId },
+          data: { balance: { increment: expense.amount } },
+        });
+      }
+    });
+  }
+
+  private async lockSplit(tx: Db, userId: string, splitId: string): Promise<Split> {
+    const locked = await tx.$queryRaw<{ id: string }[]>`
+      SELECT id FROM "Split" WHERE id = ${splitId}::uuid AND "userId" = ${userId}::uuid FOR UPDATE`;
+    if (locked.length === 0) throw AppError.notFound('Split');
+    return tx.split.findUniqueOrThrow({ where: { id: splitId } });
   }
 
   private async createExpense(

@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
+  confirmDebtSchema,
   createSplitSchema,
   idSchema,
+  type ConfirmDebtInput,
   type CreateSplitInput,
   type SplitDetailDto,
   type SplitListDto,
@@ -37,5 +39,25 @@ export class SplitsController {
     @Param('id', new ZodValidationPipe(idSchema)) id: string,
   ): Promise<SplitDetailDto> {
     return this.splits.detail(user.id, id);
+  }
+
+  @Post(':id/people/:personId/confirm')
+  @HttpCode(HttpStatus.OK)
+  confirm(
+    @CurrentUser() user: AuthUser,
+    @Param('id', new ZodValidationPipe(idSchema)) id: string,
+    @Param('personId', new ZodValidationPipe(idSchema)) personId: string,
+    @Body(new ZodValidationPipe(confirmDebtSchema)) body: ConfirmDebtInput,
+  ): Promise<SplitDetailDto> {
+    return this.splits.confirm(user.id, id, personId, body);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(
+    @CurrentUser() user: AuthUser,
+    @Param('id', new ZodValidationPipe(idSchema)) id: string,
+  ): Promise<void> {
+    return this.splits.remove(user.id, id);
   }
 }
