@@ -32,12 +32,18 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
+export const ENV = Symbol('ENV');
+
+let cached: Env | undefined;
+
 export function loadEnv(): Env {
+  if (cached) return cached;
   if (existsSync('.env')) process.loadEnvFile('.env');
   const parsed = envSchema.safeParse(process.env);
   if (!parsed.success) {
     const problems = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
     throw new Error(`Invalid api env. ${problems}. Copy apps/api/.env.example to apps/api/.env.`);
   }
-  return parsed.data;
+  cached = parsed.data;
+  return cached;
 }
