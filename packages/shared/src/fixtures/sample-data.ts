@@ -62,7 +62,109 @@ export interface FixtureTransaction {
   source: TransactionSource;
 }
 
+interface HistoryMonth {
+  month: string;
+  label: string;
+  bonus: number;
+  shopping: number;
+  food: number;
+  electricity: boolean;
+}
+
+const HISTORY_MONTHS: readonly HistoryMonth[] = [
+  {
+    month: '2026-06',
+    label: 'Juni',
+    bonus: 0,
+    shopping: 1_500_000,
+    food: 1_125_000,
+    electricity: true,
+  },
+  {
+    month: '2026-07',
+    label: 'Juli',
+    bonus: 0,
+    shopping: 1_700_000,
+    food: 1_425_000,
+    electricity: true,
+  },
+  {
+    month: '2026-08',
+    label: 'Agustus',
+    bonus: 200_000,
+    shopping: 1_300_000,
+    food: 1_125_000,
+    electricity: true,
+  },
+  {
+    month: '2026-09',
+    label: 'September',
+    bonus: 0,
+    shopping: 1_600_000,
+    food: 1_325_000,
+    electricity: true,
+  },
+  {
+    month: '2026-10',
+    label: 'Oktober',
+    bonus: 100_000,
+    shopping: 1_700_000,
+    food: 1_418_000,
+    electricity: false,
+  },
+];
+
+function historyRows(h: HistoryMonth): FixtureTransaction[] {
+  const row = (
+    day: string,
+    slug: string,
+    type: TransactionType,
+    amount: number,
+    walletKey: string,
+    categoryKey: string,
+    description: string,
+    note: string | null,
+  ): FixtureTransaction => ({
+    key: `h-${h.month}-${slug}`,
+    type,
+    amount,
+    walletKey,
+    categoryKey,
+    date: `${h.month}-${day}`,
+    description,
+    note,
+    source: 'MANUAL',
+  });
+  const name = `Gaji ${h.label}`;
+  return [
+    row('01', 'gaji', 'INCOME', 5_000_000, 'bca', 'gaji', name, name),
+    row('03', 'sewa', 'EXPENSE', 725_000, 'bca', 'tempat-tinggal', 'Sewa kos', 'Sewa kos'),
+    row(
+      '10',
+      'belanja',
+      'EXPENSE',
+      h.shopping,
+      'bca',
+      'belanja',
+      'Belanja bulanan',
+      'Belanja bulanan',
+    ),
+    row('14', 'transport', 'EXPENSE', 300_000, 'tunai', 'transportasi', 'Transportasi', null),
+    ...(h.bonus > 0
+      ? [row('15', 'bonus', 'INCOME', h.bonus, 'bca', 'gaji', 'Bonus', 'Bonus')]
+      : []),
+    row('20', 'hiburan', 'EXPENSE', 200_000, 'gopay', 'hiburan', 'Hiburan', null),
+    ...(h.electricity
+      ? [row('21', 'listrik', 'EXPENSE', 250_000, 'bca', 'tagihan', 'Listrik PLN', 'Listrik PLN')]
+      : []),
+    row('24', 'makan', 'EXPENSE', h.food, 'gopay', 'makan', 'Makan & minum', null),
+  ];
+}
+
+export const DEMO_HISTORY: readonly FixtureTransaction[] = HISTORY_MONTHS.flatMap(historyRows);
+
 export const DEMO_TRANSACTIONS: readonly FixtureTransaction[] = [
+  ...DEMO_HISTORY,
   {
     key: 'listrik-okt',
     type: 'EXPENSE',

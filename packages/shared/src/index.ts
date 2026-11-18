@@ -13,3 +13,4 @@ export * from './schemas/transaction.schema';
 export * from './schemas/bill.schema';
 export * from './schemas/split.schema';
 export * from './schemas/public-split.schema';
+export * from './schemas/report.schema';
