@@ -1,10 +1,26 @@
-import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
   createTransactionSchema,
   idSchema,
+  listTransactionsQuerySchema,
+  recentTransactionsQuerySchema,
   updateTransactionSchema,
   type CreateTransactionInput,
+  type ListTransactionsQuery,
+  type Paginated,
+  type RecentTransactionsQuery,
   type TransactionDto,
   type UpdateTransactionInput,
 } from '@coinbook/shared';
@@ -18,6 +34,22 @@ import { TransactionsService } from './transactions.service';
 @Controller('transactions')
 export class TransactionsController {
   constructor(private readonly transactions: TransactionsService) {}
+
+  @Get()
+  list(
+    @CurrentUser() user: AuthUser,
+    @Query(new ZodValidationPipe(listTransactionsQuerySchema)) query: ListTransactionsQuery,
+  ): Promise<Paginated<TransactionDto>> {
+    return this.transactions.list(user.id, query);
+  }
+
+  @Get('recent')
+  recent(
+    @CurrentUser() user: AuthUser,
+    @Query(new ZodValidationPipe(recentTransactionsQuerySchema)) query: RecentTransactionsQuery,
+  ): Promise<TransactionDto[]> {
+    return this.transactions.recent(user.id, query.limit);
+  }
 
   @Post()
   create(

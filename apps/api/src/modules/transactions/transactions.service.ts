@@ -3,11 +3,14 @@ import type { Category, Prisma, Transaction, TransactionType, Wallet } from '@pr
 import {
   fromDateOnly,
   type CreateTransactionInput,
+  type ListTransactionsQuery,
+  type Paginated,
   type TransactionDto,
   type UpdateTransactionInput,
 } from '@coinbook/shared';
 import { AppError } from '../../common/errors/app-error';
 import { PrismaService } from '../../database/prisma.service';
+import { ledgerCountSql, ledgerFilterSql, ledgerSql, type LedgerRow } from './ledger.query';
 import { toTransactionDto, transactionInclude } from './transactions.mapper';
 
 type Db = Prisma.TransactionClient;
@@ -55,6 +58,37 @@ function describe(
 @Injectable()
 export class TransactionsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async list(userId: string, query: ListTransactionsQuery): Promise<Paginated<TransactionDto>> {
+    const { page, pageSize, ...filters } = query;
+    const where = ledgerFilterSql(filters);
+    const totalBalance = await this.prisma.wallet.aggregate({
+      where: { userId },
+      _sum: { balance: true },
+    });
+    const [rows, countRows] = await Promise.all([
+      this.prisma.$queryRaw<LedgerRow[]>(
+        ledgerSql(userId, totalBalance._sum.balance ?? 0, where, pageSize, (page - 1) * pageSize),
+      ),
+      this.prisma.$queryRaw<{ count: number }[]>(ledgerCountSql(userId, where)),
+    ]);
+    const records = await this.prisma.transaction.findMany({
+      where: { id: { in: rows.map((r) => r.id) } },
+      include: transactionInclude,
+    });
+    const byId = new Map(records.map((r) => [r.id, r]));
+    const data = rows.flatMap((r) => {
+      const record = byId.get(r.id);
+      return record ? [toTransactionDto(record, r.balance_after)] : [];
+    });
+    const total = countRows[0]?.count ?? 0;
+    return { data, page, pageSize, total, totalPages: Math.ceil(total / pageSize) };
+  }
+
+  async recent(userId: string, limit: number): Promise<TransactionDto[]> {
+    const result = await this.list(userId, { page: 1, pageSize: limit });
+    return result.data;
+  }
 
   create(userId: string, input: CreateTransactionInput): Promise<TransactionDto> {
     return this.prisma.$transaction(async (tx) => {
