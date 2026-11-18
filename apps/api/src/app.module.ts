@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppExceptionFilter } from './common/filters/app-exception.filter';
+import { SupabaseAuthGuard } from './common/guards/supabase-auth.guard';
+import { UserThrottlerGuard } from './common/guards/user-throttler.guard';
 import { EnvModule } from './config/env.module';
 import { PrismaModule } from './database/prisma.module';
 import { HealthController } from './modules/health/health.controller';
@@ -14,7 +16,8 @@ import { HealthController } from './modules/health/health.controller';
   ],
   controllers: [HealthController],
   providers: [
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: SupabaseAuthGuard },
+    { provide: APP_GUARD, useClass: UserThrottlerGuard },
     { provide: APP_FILTER, useClass: AppExceptionFilter },
   ],
 })
