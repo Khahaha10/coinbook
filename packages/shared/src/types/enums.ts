@@ -1,0 +1,16 @@
+export const WALLET_TYPES = ['BANK', 'EWALLET', 'CASH'] as const;
+export const CATEGORY_TYPES = ['INCOME', 'EXPENSE'] as const;
+export const TRANSACTION_TYPES = ['INCOME', 'EXPENSE', 'TRANSFER'] as const;
+export const TRANSACTION_SOURCES = ['MANUAL', 'BILL', 'SPLIT'] as const;
+export const BILL_CYCLES = ['MONTHLY', 'YEARLY'] as const;
+export const DEBT_STATUSES = ['UNPAID', 'PENDING', 'PAID'] as const;
+export const DISCOUNT_TYPES = ['NOMINAL', 'PERCENT'] as const;
+export const REMINDER_CHANNELS = ['TELEGRAM', 'EMAIL'] as const;
+export type WalletType = (typeof WALLET_TYPES)[number];
+export type CategoryType = (typeof CATEGORY_TYPES)[number];
+export type TransactionType = (typeof TRANSACTION_TYPES)[number];
+export type TransactionSource = (typeof TRANSACTION_SOURCES)[number];
+export type BillCycle = (typeof BILL_CYCLES)[number];
+export type DebtStatus = (typeof DEBT_STATUSES)[number];
+export type DiscountType = (typeof DISCOUNT_TYPES)[number];
+export type ReminderChannel = (typeof REMINDER_CHANNELS)[number];
