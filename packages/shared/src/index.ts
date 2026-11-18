@@ -12,3 +12,4 @@ export * from './schemas/category.schema';
 export * from './schemas/transaction.schema';
 export * from './schemas/bill.schema';
 export * from './schemas/split.schema';
+export * from './schemas/public-split.schema';
