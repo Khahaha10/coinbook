@@ -14,7 +14,8 @@
     "format": "prettier --write .",
     "db:migrate": "pnpm --filter api prisma:migrate",
     "db:deploy": "pnpm --filter api prisma:deploy",
-    "db:status": "pnpm --filter api prisma:status"
+    "db:status": "pnpm --filter api prisma:status",
+    "db:seed": "pnpm --filter api prisma:seed"
   },
   "devDependencies": {
     "prettier": "3.10.1",

@@ -128,9 +128,9 @@ model Transaction {
   createdAt   DateTime          @default(now())
 
   user        Profile      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  wallet      Wallet       @relation("FromWallet", fields: [walletId], references: [id])
-  toWallet    Wallet?      @relation("ToWallet", fields: [toWalletId], references: [id])
-  category    Category?    @relation(fields: [categoryId], references: [id])
+  wallet      Wallet       @relation("FromWallet", fields: [walletId], references: [id], onDelete: NoAction)
+  toWallet    Wallet?      @relation("ToWallet", fields: [toWalletId], references: [id], onDelete: NoAction)
+  category    Category?    @relation(fields: [categoryId], references: [id], onDelete: NoAction)
   billPayment BillPayment?
   debt        Debt?
   split       Split?
@@ -153,8 +153,8 @@ model Bill {
   createdAt   DateTime  @default(now())
 
   user      Profile       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  wallet    Wallet        @relation(fields: [walletId], references: [id])
-  category  Category      @relation(fields: [categoryId], references: [id])
+  wallet    Wallet        @relation(fields: [walletId], references: [id], onDelete: NoAction)
+  category  Category      @relation(fields: [categoryId], references: [id], onDelete: NoAction)
   payments  BillPayment[]
   reminders ReminderLog[]
 
@@ -204,8 +204,8 @@ model Split {
   createdAt            DateTime     @default(now())
 
   user               Profile       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  wallet             Wallet        @relation(fields: [walletId], references: [id])
-  expenseTransaction Transaction?  @relation(fields: [expenseTransactionId], references: [id])
+  wallet             Wallet        @relation(fields: [walletId], references: [id], onDelete: NoAction)
+  expenseTransaction Transaction?  @relation(fields: [expenseTransactionId], references: [id], onDelete: NoAction)
   people             SplitPerson[]
   items              SplitItem[]
 
@@ -262,6 +262,6 @@ model Debt {
   transactionId String?    @unique @db.Uuid
 
   person      SplitPerson  @relation(fields: [personId], references: [id], onDelete: Cascade)
-  wallet      Wallet?      @relation(fields: [walletId], references: [id])
-  transaction Transaction? @relation(fields: [transactionId], references: [id])
+  wallet      Wallet?      @relation(fields: [walletId], references: [id], onDelete: NoAction)
+  transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: NoAction)
 }

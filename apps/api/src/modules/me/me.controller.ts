@@ -1,6 +1,12 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { updateMeSchema, type MeDto, type UpdateMeInput } from '@coinbook/shared';
+import {
+  bootstrapQuerySchema,
+  updateMeSchema,
+  type BootstrapQuery,
+  type MeDto,
+  type UpdateMeInput,
+} from '@coinbook/shared';
 import type { AuthUser } from '../../common/auth/auth-user';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
@@ -14,8 +20,11 @@ export class MeController {
 
   @Post('bootstrap')
   @HttpCode(HttpStatus.OK)
-  bootstrap(@CurrentUser() user: AuthUser): Promise<MeDto> {
-    return this.me.bootstrap(user);
+  bootstrap(
+    @CurrentUser() user: AuthUser,
+    @Query(new ZodValidationPipe(bootstrapQuerySchema)) query: BootstrapQuery,
+  ): Promise<MeDto> {
+    return this.me.bootstrap(user, query.demo);
   }
 
   @Get()

@@ -32,3 +32,11 @@ export const meSchema = z.object({
   telegramUsername: z.string().nullable(),
 });
 export type MeDto = z.infer<typeof meSchema>;
+
+export const bootstrapQuerySchema = z.object({
+  demo: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+});
+export type BootstrapQuery = z.infer<typeof bootstrapQuerySchema>;

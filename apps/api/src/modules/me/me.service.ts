@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Prisma, type Profile } from '@prisma/client';
 import {
   DEFAULT_CATEGORIES,
@@ -7,11 +7,15 @@ import {
   type UpdateMeInput,
 } from '@coinbook/shared';
 import type { AuthUser } from '../../common/auth/auth-user';
+import { businessToday } from '../../common/clock';
 import { AppError } from '../../common/errors/app-error';
+import { ENV, type Env } from '../../config/env';
 import { PrismaService } from '../../database/prisma.service';
+import { seedDemo } from '../demo/demo-seeder';
 import { toMeDto } from './me.mapper';
 
 const FALLBACK_NAME = 'Kamu';
+const DEMO_SEED_TIMEOUT_MS = 30_000;
 
 function displayName(user: AuthUser): string {
   const fromEmail = user.email?.split('@')[0];
@@ -20,13 +24,21 @@ function displayName(user: AuthUser): string {
 
 @Injectable()
 export class MeService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(ENV) private readonly env: Env,
+  ) {}
 
-  async bootstrap(user: AuthUser): Promise<MeDto> {
+  async bootstrap(user: AuthUser, demo: boolean): Promise<MeDto> {
     const existing = await this.prisma.profile.findUnique({ where: { id: user.id } });
     if (existing) return toMeDto(existing);
+    if (demo && !user.isAnonymous) {
+      throw new AppError('VALIDATION_ERROR', 'Demo data is only available for anonymous sessions', {
+        demo: 'anonymous session required',
+      });
+    }
     try {
-      const created = await this.createWithDefaults(user);
+      const created = demo ? await this.createDemo(user.id) : await this.createWithDefaults(user);
       return toMeDto(created);
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
@@ -45,6 +57,18 @@ export class MeService {
   async update(userId: string, input: UpdateMeInput): Promise<MeDto> {
     const profile = await this.prisma.profile.update({ where: { id: userId }, data: input });
     return toMeDto(profile);
+  }
+
+  private createDemo(userId: string): Promise<Profile> {
+    return this.prisma.$transaction(
+      (tx) =>
+        seedDemo(tx, {
+          userId,
+          today: businessToday(this.env),
+          useFixedShareTokens: this.env.COINBOOK_FIXED_TODAY !== undefined,
+        }),
+      { timeout: DEMO_SEED_TIMEOUT_MS },
+    );
   }
 
   private createWithDefaults(user: AuthUser): Promise<Profile> {
