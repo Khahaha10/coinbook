@@ -6,3 +6,4 @@ export * from './utils/bill-cycle';
 export * from './utils/split-calculator';
 export * from './schemas/common';
 export * from './fixtures/sample-data';
+export * from './schemas/me.schema';

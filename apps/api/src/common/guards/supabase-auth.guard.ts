@@ -10,6 +10,14 @@ import { AppError } from '../errors/app-error';
 const claimsSchema = z.object({
   sub: z.uuid(),
   is_anonymous: z.boolean().optional(),
+  email: z.string().optional(),
+  user_metadata: z
+    .object({
+      full_name: z.string().optional(),
+      name: z.string().optional(),
+      avatar_url: z.string().optional(),
+    })
+    .optional(),
 });
 
 @Injectable()
@@ -56,7 +64,14 @@ export class SupabaseAuthGuard implements CanActivate {
     }
     const claims = claimsSchema.safeParse(payload);
     if (!claims.success) throw new AppError('UNAUTHORIZED', 'Invalid token claims');
-    return { id: claims.data.sub, isAnonymous: claims.data.is_anonymous ?? false };
+    const { sub, is_anonymous, email, user_metadata: meta } = claims.data;
+    return {
+      id: sub,
+      isAnonymous: is_anonymous ?? false,
+      email: email || null,
+      fullName: meta?.full_name || meta?.name || null,
+      avatarUrl: meta?.avatar_url || null,
+    };
   }
 
   private bearer(header: string | undefined): string {

@@ -7,11 +7,13 @@ import { UserThrottlerGuard } from './common/guards/user-throttler.guard';
 import { EnvModule } from './config/env.module';
 import { PrismaModule } from './database/prisma.module';
 import { HealthController } from './modules/health/health.controller';
+import { MeModule } from './modules/me/me.module';
 
 @Module({
   imports: [
     EnvModule,
     PrismaModule,
+    MeModule,
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
   ],
   controllers: [HealthController],
