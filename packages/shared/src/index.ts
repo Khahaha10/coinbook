@@ -7,3 +7,5 @@ export * from './utils/split-calculator';
 export * from './schemas/common';
 export * from './fixtures/sample-data';
 export * from './schemas/me.schema';
+export * from './schemas/wallet.schema';
+export * from './schemas/category.schema';

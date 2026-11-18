@@ -55,6 +55,22 @@ export class AppExceptionFilter implements ExceptionFilter {
         body: { error: { code: 'NOT_FOUND', message: 'Resource not found' } },
       };
     }
+    if (
+      exception instanceof Prisma.PrismaClientKnownRequestError &&
+      exception.code === 'P2002' &&
+      String(exception.meta?.target ?? '').includes('name')
+    ) {
+      return {
+        status: HttpStatus.CONFLICT,
+        body: {
+          error: {
+            code: 'DUPLICATE_NAME',
+            message: 'Name already used',
+            fields: { name: 'duplicate' },
+          },
+        },
+      };
+    }
     if (exception instanceof HttpException) {
       const status = exception.getStatus();
       const code = HTTP_CODE[status] ?? (status >= 500 ? 'INTERNAL_ERROR' : 'VALIDATION_ERROR');
