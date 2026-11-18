@@ -11,3 +11,4 @@ export * from './schemas/wallet.schema';
 export * from './schemas/category.schema';
 export * from './schemas/transaction.schema';
 export * from './schemas/bill.schema';
+export * from './schemas/split.schema';

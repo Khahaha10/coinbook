@@ -10,6 +10,7 @@ import { HealthController } from './modules/health/health.controller';
 import { BillsModule } from './modules/bills/bills.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { MeModule } from './modules/me/me.module';
+import { SplitsModule } from './modules/splits/splits.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { WalletsModule } from './modules/wallets/wallets.module';
 
@@ -22,6 +23,7 @@ import { WalletsModule } from './modules/wallets/wallets.module';
     CategoriesModule,
     TransactionsModule,
     BillsModule,
+    SplitsModule,
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
   ],
   controllers: [HealthController],
