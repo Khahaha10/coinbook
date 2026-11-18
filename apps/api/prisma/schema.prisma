@@ -1,0 +1,267 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum WalletType {
+  BANK
+  EWALLET
+  CASH
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+enum TransactionSource {
+  MANUAL
+  BILL
+  SPLIT
+}
+
+enum BillCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum DebtStatus {
+  UNPAID
+  PENDING
+  PAID
+}
+
+enum DiscountType {
+  NOMINAL
+  PERCENT
+}
+
+enum ReminderChannel {
+  TELEGRAM
+  EMAIL
+}
+
+model Profile {
+  id                    String    @id @db.Uuid
+  name                  String
+  email                 String?
+  avatarUrl             String?
+  bankInfo              String?
+  telegramChatId        String?   @unique
+  telegramUsername      String?
+  telegramLinkCode      String?   @unique
+  telegramLinkExpiresAt DateTime?
+  emailReminders        Boolean   @default(true)
+  defaultRemindDays     Int[]     @default([3, 1, 0])
+  isDemo                Boolean   @default(false)
+  createdAt             DateTime  @default(now())
+
+  wallets      Wallet[]
+  categories   Category[]
+  transactions Transaction[]
+  bills        Bill[]
+  splits       Split[]
+
+  @@index([isDemo, createdAt])
+}
+
+model Wallet {
+  id             String     @id @default(uuid()) @db.Uuid
+  userId         String     @db.Uuid
+  name           String
+  type           WalletType
+  openingBalance Int        @default(0)
+  balance        Int        @default(0)
+  isArchived     Boolean    @default(false)
+  sortOrder      Int        @default(0)
+  createdAt      DateTime   @default(now())
+
+  user         Profile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[] @relation("FromWallet")
+  incoming     Transaction[] @relation("ToWallet")
+  bills        Bill[]
+  splits       Split[]
+  debts        Debt[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model Category {
+  id        String       @id @default(uuid()) @db.Uuid
+  userId    String       @db.Uuid
+  name      String
+  type      CategoryType
+  icon      String
+  isDefault Boolean      @default(false)
+
+  user         Profile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  bills        Bill[]
+
+  @@unique([userId, name, type])
+}
+
+model Transaction {
+  id          String            @id @default(uuid()) @db.Uuid
+  userId      String            @db.Uuid
+  type        TransactionType
+  amount      Int
+  walletId    String            @db.Uuid
+  toWalletId  String?           @db.Uuid
+  categoryId  String?           @db.Uuid
+  date        DateTime          @db.Date
+  description String
+  note        String?
+  source      TransactionSource @default(MANUAL)
+  createdAt   DateTime          @default(now())
+
+  user        Profile      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet      Wallet       @relation("FromWallet", fields: [walletId], references: [id])
+  toWallet    Wallet?      @relation("ToWallet", fields: [toWalletId], references: [id])
+  category    Category?    @relation(fields: [categoryId], references: [id])
+  billPayment BillPayment?
+  debt        Debt?
+  split       Split?
+
+  @@index([userId, date(sort: Desc), createdAt(sort: Desc)])
+}
+
+model Bill {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
+  name        String
+  amount      Int
+  cycle       BillCycle
+  anchorDay   Int
+  nextDueDate DateTime  @db.Date
+  walletId    String    @db.Uuid
+  categoryId  String    @db.Uuid
+  remindDays  Int[]     @default([3, 1, 0])
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  user      Profile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet    Wallet        @relation(fields: [walletId], references: [id])
+  category  Category      @relation(fields: [categoryId], references: [id])
+  payments  BillPayment[]
+  reminders ReminderLog[]
+
+  @@index([userId, nextDueDate])
+}
+
+model BillPayment {
+  id            String   @id @default(uuid()) @db.Uuid
+  billId        String   @db.Uuid
+  transactionId String   @unique @db.Uuid
+  dueDate       DateTime @db.Date
+  paidAt        DateTime @default(now())
+
+  bill        Bill        @relation(fields: [billId], references: [id], onDelete: Cascade)
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([billId, dueDate])
+}
+
+model ReminderLog {
+  id         String          @id @default(uuid()) @db.Uuid
+  billId     String          @db.Uuid
+  dueDate    DateTime        @db.Date
+  daysBefore Int
+  channel    ReminderChannel
+  sentAt     DateTime        @default(now())
+
+  bill Bill @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  @@unique([billId, dueDate, daysBefore, channel])
+}
+
+model Split {
+  id                   String       @id @default(uuid()) @db.Uuid
+  userId               String       @db.Uuid
+  title                String
+  date                 DateTime     @db.Date
+  walletId             String       @db.Uuid
+  taxBps               Int          @default(0)
+  serviceBps           Int          @default(0)
+  discountType         DiscountType @default(NOMINAL)
+  discountValue        Int          @default(0)
+  subtotal             Int
+  grandTotal           Int
+  shareToken           String       @unique
+  expenseTransactionId String?      @unique @db.Uuid
+  createdAt            DateTime     @default(now())
+
+  user               Profile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet             Wallet        @relation(fields: [walletId], references: [id])
+  expenseTransaction Transaction?  @relation(fields: [expenseTransactionId], references: [id])
+  people             SplitPerson[]
+  items              SplitItem[]
+
+  @@index([userId, date(sort: Desc)])
+}
+
+model SplitPerson {
+  id        String  @id @default(uuid()) @db.Uuid
+  splitId   String  @db.Uuid
+  name      String
+  isOwner   Boolean @default(false)
+  share     Int
+  sortOrder Int
+
+  split       Split             @relation(fields: [splitId], references: [id], onDelete: Cascade)
+  assignments SplitAssignment[]
+  debt        Debt?
+
+  @@unique([splitId, name])
+}
+
+model SplitItem {
+  id        String @id @default(uuid()) @db.Uuid
+  splitId   String @db.Uuid
+  name      String
+  price     Int
+  qty       Int    @default(1)
+  sortOrder Int
+
+  split       Split             @relation(fields: [splitId], references: [id], onDelete: Cascade)
+  assignments SplitAssignment[]
+
+  @@index([splitId])
+}
+
+model SplitAssignment {
+  itemId   String @db.Uuid
+  personId String @db.Uuid
+
+  item   SplitItem   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  person SplitPerson @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, personId])
+}
+
+model Debt {
+  id            String     @id @default(uuid()) @db.Uuid
+  personId      String     @unique @db.Uuid
+  amount        Int
+  status        DebtStatus @default(UNPAID)
+  markedPaidAt  DateTime?
+  confirmedAt   DateTime?
+  walletId      String?    @db.Uuid
+  transactionId String?    @unique @db.Uuid
+
+  person      SplitPerson  @relation(fields: [personId], references: [id], onDelete: Cascade)
+  wallet      Wallet?      @relation(fields: [walletId], references: [id])
+  transaction Transaction? @relation(fields: [transactionId], references: [id])
+}

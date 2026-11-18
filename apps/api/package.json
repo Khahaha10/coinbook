@@ -3,11 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "nest build",
+    "build": "prisma generate && nest build",
     "dev": "nest start --watch",
     "start": "node dist/main.js",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint src"
+    "typecheck": "prisma generate && tsc --noEmit",
+    "lint": "eslint src",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:status": "prisma migrate status"
   },
   "dependencies": {
     "@coinbook/shared": "workspace:*",
