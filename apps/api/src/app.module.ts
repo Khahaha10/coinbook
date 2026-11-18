@@ -9,6 +9,7 @@ import { PrismaModule } from './database/prisma.module';
 import { HealthController } from './modules/health/health.controller';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { MeModule } from './modules/me/me.module';
+import { TransactionsModule } from './modules/transactions/transactions.module';
 import { WalletsModule } from './modules/wallets/wallets.module';
 
 @Module({
@@ -18,6 +19,7 @@ import { WalletsModule } from './modules/wallets/wallets.module';
     MeModule,
     WalletsModule,
     CategoriesModule,
+    TransactionsModule,
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
   ],
   controllers: [HealthController],

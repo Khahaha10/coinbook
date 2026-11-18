@@ -15,6 +15,7 @@ import { businessToday } from '../../common/clock';
 import { AppError } from '../../common/errors/app-error';
 import { ENV, type Env } from '../../config/env';
 import { PrismaService } from '../../database/prisma.service';
+import { TransactionsService } from '../transactions/transactions.service';
 import { toWalletDto } from './wallets.mapper';
 
 type Db = Prisma.TransactionClient;
@@ -24,6 +25,7 @@ export class WalletsService {
   constructor(
     private readonly prisma: PrismaService,
     @Inject(ENV) private readonly env: Env,
+    private readonly transactions: TransactionsService,
   ) {}
 
   async list(userId: string): Promise<WalletListDto> {
@@ -66,53 +68,28 @@ export class WalletsService {
   }
 
   async transfer(userId: string, input: TransferInput): Promise<TransferResultDto> {
-    if (input.fromWalletId === input.toWalletId) {
-      throw new AppError('SAME_WALLET', 'Source and destination wallets must differ');
-    }
-    const result = await this.prisma.$transaction(async (tx) => {
-      const from = await this.usable(tx, userId, input.fromWalletId);
-      const to = await this.usable(tx, userId, input.toWalletId);
-      const created = await tx.transaction.create({
-        data: {
-          userId,
-          type: 'TRANSFER',
-          amount: input.amount,
-          walletId: from.id,
-          toWalletId: to.id,
-          date: fromDateOnly(input.date),
-          description: input.note || `Transfer ${from.name} ke ${to.name}`,
-          note: input.note || null,
-          source: 'MANUAL',
-        },
-      });
-      const fromAfter = await tx.wallet.update({
-        where: { id: from.id },
-        data: { balance: { decrement: input.amount } },
-      });
-      const toAfter = await tx.wallet.update({
-        where: { id: to.id },
-        data: { balance: { increment: input.amount } },
-      });
-      return { transactionId: created.id, fromAfter, toAfter };
+    const created = await this.transactions.create(userId, {
+      type: 'TRANSFER',
+      amount: input.amount,
+      walletId: input.fromWalletId,
+      toWalletId: input.toWalletId,
+      date: input.date,
+      note: input.note,
     });
+    const [from, to] = await Promise.all([
+      this.prisma.wallet.findUniqueOrThrow({ where: { id: input.fromWalletId } }),
+      this.prisma.wallet.findUniqueOrThrow({ where: { id: input.toWalletId } }),
+    ]);
     return {
-      transactionId: result.transactionId,
-      from: await this.withCount(userId, result.fromAfter),
-      to: await this.withCount(userId, result.toAfter),
+      transactionId: created.id,
+      from: await this.withCount(userId, from),
+      to: await this.withCount(userId, to),
     };
   }
 
   private async owned(db: Db, userId: string, id: string): Promise<Wallet> {
     const wallet = await db.wallet.findFirst({ where: { id, userId } });
     if (!wallet) throw AppError.notFound('Wallet');
-    return wallet;
-  }
-
-  private async usable(db: Db, userId: string, id: string): Promise<Wallet> {
-    const wallet = await this.owned(db, userId, id);
-    if (wallet.isArchived) {
-      throw new AppError('WALLET_ARCHIVED', `Wallet ${wallet.name} is archived`);
-    }
     return wallet;
   }
 

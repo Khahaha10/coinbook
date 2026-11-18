@@ -9,3 +9,4 @@ export * from './fixtures/sample-data';
 export * from './schemas/me.schema';
 export * from './schemas/wallet.schema';
 export * from './schemas/category.schema';
+export * from './schemas/transaction.schema';
