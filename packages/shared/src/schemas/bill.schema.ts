@@ -6,6 +6,7 @@ import {
   billCycleSchema,
   dateOnlySchema,
   idSchema,
+  monthKeySchema,
   nameSchema,
   positiveRupiahSchema,
 } from './common';
@@ -60,4 +61,31 @@ export interface BillListDto {
   data: BillDto[];
   monthlyTotal: number;
   activeCount: number;
+}
+
+export const payBillSchema = z.object({ dueDate: dateOnlySchema.optional() }).strict();
+export type PayBillInput = z.infer<typeof payBillSchema>;
+
+export const billCalendarQuerySchema = z.object({ month: monthKeySchema }).strict();
+export type BillCalendarQuery = z.infer<typeof billCalendarQuerySchema>;
+
+export interface BillPaymentDto {
+  id: string;
+  dueDate: DateOnly;
+  paidAt: string;
+  amount: number;
+  wallet: { id: string; name: string };
+  transactionId: string;
+}
+
+export interface BillCalendarMarker {
+  date: DateOnly;
+  billId: string;
+  name: string;
+  paid: boolean;
+}
+
+export interface BillCalendarDto {
+  month: string;
+  markers: BillCalendarMarker[];
 }

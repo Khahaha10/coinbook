@@ -1,11 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Bill } from '@prisma/client';
 import {
+  billStatus,
   fromDateOnly,
   monthlyEquivalent,
+  monthRange,
+  nextDueDate,
+  toDateOnly,
+  type BillCalendarDto,
+  type BillCalendarMarker,
   type BillDto,
   type BillListDto,
+  type BillPaymentDto,
   type CreateBillInput,
+  type PayBillInput,
   type UpdateBillInput,
 } from '@coinbook/shared';
 import { businessToday } from '../../common/clock';
@@ -88,6 +96,105 @@ export class BillsService {
       include: billInclude,
     });
     return toBillDto(bill, businessToday(this.env));
+  }
+
+  pay(userId: string, id: string, input: PayBillInput): Promise<BillDto> {
+    const today = businessToday(this.env);
+    return this.prisma.$transaction(async (tx) => {
+      const locked = await tx.$queryRaw<{ id: string }[]>`
+        SELECT id FROM "Bill" WHERE id = ${id}::uuid AND "userId" = ${userId}::uuid FOR UPDATE`;
+      if (locked.length === 0) throw AppError.notFound('Bill');
+      const bill = await tx.bill.findUniqueOrThrow({ where: { id }, include: billInclude });
+      if (!bill.isActive) {
+        throw new AppError('VALIDATION_ERROR', 'Bill is inactive', { id: 'inactive' });
+      }
+      const dueDate = toDateOnly(bill.nextDueDate);
+      const lastPaid = bill.payments[0];
+      const alreadyPaid = input.dueDate
+        ? input.dueDate !== dueDate
+        : billStatus({
+            nextDueDate: dueDate,
+            lastPaidDueDate: lastPaid ? toDateOnly(lastPaid.dueDate) : null,
+            today,
+          }).status === 'PAID';
+      if (alreadyPaid) throw new AppError('BILL_ALREADY_PAID', 'This due date is already paid');
+
+      const wallet = await tx.wallet.findUniqueOrThrow({ where: { id: bill.walletId } });
+      if (wallet.isArchived) {
+        throw new AppError('WALLET_ARCHIVED', `Wallet ${wallet.name} is archived`);
+      }
+      const payment = await tx.transaction.create({
+        data: {
+          userId,
+          type: 'EXPENSE',
+          amount: bill.amount,
+          walletId: bill.walletId,
+          categoryId: bill.categoryId,
+          date: fromDateOnly(today),
+          description: bill.name,
+          source: 'BILL',
+        },
+      });
+      await tx.wallet.update({
+        where: { id: bill.walletId },
+        data: { balance: { decrement: bill.amount } },
+      });
+      await tx.billPayment.create({
+        data: { billId: id, transactionId: payment.id, dueDate: bill.nextDueDate },
+      });
+      const updated = await tx.bill.update({
+        where: { id },
+        data: { nextDueDate: fromDateOnly(nextDueDate(dueDate, bill.cycle, bill.anchorDay)) },
+        include: billInclude,
+      });
+      return toBillDto(updated, today);
+    });
+  }
+
+  async payments(userId: string, id: string): Promise<BillPaymentDto[]> {
+    await this.owned(userId, id);
+    const rows = await this.prisma.billPayment.findMany({
+      where: { billId: id },
+      orderBy: { dueDate: 'desc' },
+      include: { transaction: { include: { wallet: { select: { id: true, name: true } } } } },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      dueDate: toDateOnly(r.dueDate),
+      paidAt: r.paidAt.toISOString(),
+      amount: r.transaction.amount,
+      wallet: r.transaction.wallet,
+      transactionId: r.transactionId,
+    }));
+  }
+
+  async calendar(userId: string, month: string): Promise<BillCalendarDto> {
+    const { from, to } = monthRange(month);
+    const [bills, paid] = await Promise.all([
+      this.prisma.bill.findMany({ where: { userId, isActive: true } }),
+      this.prisma.billPayment.findMany({
+        where: {
+          bill: { userId },
+          dueDate: { gte: fromDateOnly(from), lte: fromDateOnly(to) },
+        },
+        include: { bill: { select: { name: true } } },
+      }),
+    ]);
+    const markers: BillCalendarMarker[] = paid.map((p) => ({
+      date: toDateOnly(p.dueDate),
+      billId: p.billId,
+      name: p.bill.name,
+      paid: true,
+    }));
+    for (const bill of bills) {
+      let due = toDateOnly(bill.nextDueDate);
+      while (due <= to) {
+        if (due >= from) markers.push({ date: due, billId: bill.id, name: bill.name, paid: false });
+        due = nextDueDate(due, bill.cycle, bill.anchorDay);
+      }
+    }
+    markers.sort((x, y) => x.date.localeCompare(y.date) || x.name.localeCompare(y.name, 'id'));
+    return { month, markers };
   }
 
   private async owned(userId: string, id: string): Promise<Bill> {
