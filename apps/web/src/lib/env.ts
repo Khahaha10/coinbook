@@ -16,7 +16,9 @@ const parsed = schema.safeParse({
 
 if (!parsed.success) {
   const missing = parsed.error.issues.map((i) => i.path.join('.')).join(', ');
-  throw new Error(`Invalid web env: ${missing}. Copy apps/web/.env.example to apps/web/.env.local.`);
+  throw new Error(
+    `Invalid web env: ${missing}. Copy apps/web/.env.example to apps/web/.env.local.`,
+  );
 }
 
 export const env = parsed.data;
