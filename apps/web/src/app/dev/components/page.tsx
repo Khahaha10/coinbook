@@ -1,4 +1,6 @@
 import { notFound } from 'next/navigation';
+import { ToastProvider } from '@/components/ui/toast';
+import { PrimitivesBoard } from './primitives-board';
 
 const COLOR_TOKENS = [
   'ink-900',
@@ -65,9 +67,13 @@ function TokenBoard({ theme }: { theme: 'light' | 'dark' }) {
 export default function DevComponentsPage() {
   if (process.env.NODE_ENV === 'production') notFound();
   return (
-    <main className="grid min-h-screen grid-cols-1 @min-[1024px]/cb:grid-cols-2">
-      <TokenBoard theme="light" />
-      <TokenBoard theme="dark" />
-    </main>
+    <ToastProvider>
+      <main className="grid min-h-screen grid-cols-1 @min-[1024px]/cb:grid-cols-2">
+        <TokenBoard theme="light" />
+        <TokenBoard theme="dark" />
+        <PrimitivesBoard theme="light" />
+        <PrimitivesBoard theme="dark" />
+      </main>
+    </ToastProvider>
   );
 }

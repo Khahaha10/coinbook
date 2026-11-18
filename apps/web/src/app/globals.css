@@ -99,6 +99,26 @@
   --text-body: var(--fs-body);
   --text-bal: var(--fs-bal);
   --text-meta: 13px;
+  --animate-sheet-up: cb-up 0.2s ease-out;
+  --animate-fade: cb-fade 0.2s ease-out;
+}
+
+@keyframes cb-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes cb-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @layer base {
@@ -122,6 +142,11 @@
 
   :where(a) {
     color: var(--ink-700);
+  }
+
+  svg.lucide {
+    stroke-width: 1.5;
+    flex: none;
   }
 
   :focus-visible {
