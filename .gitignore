@@ -1,0 +1,24 @@
+# Design & spec files (local only)
+coinbook-design/
+coinbook-coding-prompt.md
+coinbook-design-prompt.md
+coinbook-project-spec.md
+CLAUDE.md
+
+# Dependencies & build output
+node_modules/
+dist/
+.next/
+.turbo/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Env (only .env.example is committed)
+.env
+.env.*
+!.env.example
+
+# Test output
+test-results/
+playwright-report/
