@@ -40,7 +40,7 @@ export function Segmented<T extends string>({
           type="button"
           aria-pressed={o.value === value}
           onClick={() => onChange(o.value)}
-          className="inline-flex min-h-10 flex-1 basis-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 text-sm font-medium text-muted transition-[background-color,color] duration-150 aria-pressed:bg-paper aria-pressed:text-text aria-pressed:shadow-[0_1px_0_var(--rule)]"
+          className="inline-flex min-h-10 flex-1 basis-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 text-sm font-medium text-muted-desk transition-[background-color,color] duration-150 aria-pressed:bg-paper aria-pressed:text-text aria-pressed:shadow-[0_1px_0_var(--rule)]"
         >
           {o.icon}
           {o.label}

@@ -10,7 +10,7 @@ const STYLES: Record<BadgeVariant, { className: string; icon: LucideIcon }> = {
   paid: { className: 'bg-tag-bg text-tag-text', icon: Check },
   waiting: { className: 'bg-warning-bg text-warning-text', icon: Clock },
   unpaid: {
-    className: 'bg-transparent text-muted shadow-[inset_0_0_0_1px_var(--rule-strong)]',
+    className: 'bg-transparent text-muted-desk shadow-[inset_0_0_0_1px_var(--rule-strong)]',
     icon: Circle,
   },
 };

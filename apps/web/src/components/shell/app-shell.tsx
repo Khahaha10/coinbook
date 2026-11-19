@@ -114,7 +114,7 @@ export function AppShell({
           </span>
           <span className="who-t flex flex-col">
             <span className="font-medium">{user.name}</span>
-            <span className="text-meta text-muted">Akun pribadi</span>
+            <span className="text-meta text-muted-desk">Akun pribadi</span>
           </span>
         </div>
       </aside>
