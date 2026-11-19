@@ -1,0 +1,347 @@
+.coin {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  background: var(--brass);
+  color: #5c4208;
+  font-weight: 500;
+  font-size: 17px;
+  line-height: 1;
+  box-shadow:
+    inset 0 2px 0 #e9c25a,
+    inset 0 -3px 0 #9a7212;
+}
+.coin.lg {
+  width: 56px;
+  height: 56px;
+  font-size: 26px;
+  box-shadow:
+    inset 0 3px 0 #e9c25a,
+    inset 0 -4px 0 #9a7212;
+}
+.coin.xl {
+  width: 96px;
+  height: 96px;
+  font-size: 44px;
+  box-shadow:
+    inset 0 4px 0 #e9c25a,
+    inset 0 -6px 0 #9a7212;
+}
+.coin.dot {
+  width: 14px;
+  height: 14px;
+  font-size: 0;
+  box-shadow:
+    inset 0 1px 0 #e9c25a,
+    inset 0 -2px 0 #9a7212;
+}
+.coin.dot.ring {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--brass);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.pb {
+  container-type: inline-size;
+  container-name: pb;
+  max-width: 760px;
+  width: 100%;
+  background: var(--paper);
+  border-radius: 14px;
+  box-shadow: var(--shadow-paper);
+  overflow: hidden;
+}
+.pb-cover {
+  background: var(--cover);
+  border: 1px solid var(--cover-border);
+  border-bottom: 0;
+  border-radius: 14px 14px 0 0;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+}
+.pb-cover .lab {
+  color: var(--ink-100);
+  font-size: 13px;
+  font-weight: 400;
+}
+.pb-cover .bal {
+  font-size: clamp(28px, calc(17.2px + 3cqi), 40px);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+.pb-cover .sub {
+  color: var(--ink-100);
+  font-size: 13px;
+  margin-top: 4px;
+}
+.pb-body {
+  padding: 4px 16px 8px;
+}
+.pb-head {
+  display: none;
+}
+.pb-month {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 16px 0 6px;
+  font-weight: 500;
+}
+.pb-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'k m' 'd s';
+  column-gap: 12px;
+  row-gap: 2px;
+  padding: 12px 0;
+  border-top: 1px dashed var(--rule);
+  transition: background-color 0.15s;
+}
+.pb-month + .pb-row {
+  border-top: 1px solid var(--rule);
+}
+.pb-row .d {
+  grid-area: d;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.pb-row .k {
+  grid-area: k;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pb-row .m {
+  grid-area: m;
+  text-align: right;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.pb-row .m.inc {
+  color: var(--income);
+}
+.pb-row .m.exp {
+  color: var(--expense);
+}
+.pb-row .s {
+  grid-area: s;
+  text-align: right;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.pb-row .s::before {
+  content: 'Saldo ';
+}
+.pb-row .m.tr {
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-end;
+}
+.pb-foot {
+  border-top: 1px solid var(--rule);
+  padding: 4px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.pb-empty {
+  border: 1.5px dashed var(--rule-strong);
+  border-radius: 10px;
+  padding: 24px 16px;
+  margin: 16px 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.pb-row.new {
+  overflow: hidden;
+  animation: cb-print 0.25s ease-out both;
+}
+@keyframes cb-print {
+  from {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  to {
+    max-height: 90px;
+  }
+}
+@container pb (min-width: 520px) {
+  .pb-cover {
+    padding: 24px;
+  }
+  .pb-body {
+    padding: 4px 24px 8px;
+  }
+  .pb-foot {
+    padding: 4px 24px;
+  }
+  .pb-head {
+    display: grid;
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 16px 0 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .pb-head,
+  .pb-row {
+    grid-template-columns: 56px minmax(0, 1fr) minmax(96px, auto) minmax(112px, auto);
+    grid-template-areas: 'd k m s';
+    column-gap: 16px;
+    align-items: center;
+  }
+  .pb-head span:nth-child(3),
+  .pb-head span:nth-child(4) {
+    text-align: right;
+  }
+  .pb-row {
+    padding: 14px 0;
+  }
+  .pb-row .d {
+    font-size: 15px;
+  }
+  .pb-row .s {
+    font-size: 15px;
+    color: var(--text);
+  }
+  .pb-row .s::before {
+    content: none;
+  }
+  .pb-head + .pb-month {
+    padding-top: 12px;
+  }
+}
+
+.slip {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  filter: var(--slip-shadow);
+}
+.rc {
+  background: var(--paper);
+  border-radius: 4px 4px 0 0;
+  padding: 20px 20px 30px;
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text);
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% /
+    12px 100%;
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 12px 100%;
+}
+.rc .t {
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.4;
+}
+.rc .dt {
+  text-align: center;
+  color: var(--text-muted);
+}
+.rc .rl {
+  border: 0;
+  border-top: 1px dashed var(--rule-strong);
+  margin: 12px 0;
+}
+.rc .ln {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.rc .ln > span:last-child {
+  white-space: nowrap;
+}
+.rc .mu {
+  color: var(--text-muted);
+}
+.rc .tot {
+  font-weight: 500;
+  font-size: 13.5px;
+}
+.rc .who {
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+.rc .note {
+  text-align: center;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+.slip.me .rc {
+  box-shadow: inset 0 0 0 2px var(--ink-700);
+}
+.slip-stamp {
+  position: absolute;
+  right: 18px;
+  top: 96px;
+  z-index: 2;
+}
+@container cb (min-width: 768px) {
+  .rc {
+    font-size: 13px;
+  }
+}
+
+.stamp {
+  display: inline-block;
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  line-height: 1;
+  color: var(--ink-700);
+  border: 2.5px solid currentColor;
+  outline: 1px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 6px;
+  padding: 7px 10px 7px 12px;
+  transform: rotate(-12deg);
+  opacity: 0.82;
+  pointer-events: none;
+  background: transparent;
+  white-space: nowrap;
+}
+.stamp.sm {
+  font-size: 16px;
+  padding: 5px 8px 5px 10px;
+  letter-spacing: 1.5px;
+}
+.stamp.anim {
+  animation: cb-stamp 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+@keyframes cb-stamp {
+  from {
+    transform: rotate(-12deg) scale(1.8);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(-12deg) scale(1);
+    opacity: 0.82;
+  }
+}

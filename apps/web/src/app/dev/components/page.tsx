@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { ToastProvider } from '@/components/ui/toast';
 import { PrimitivesBoard } from './primitives-board';
+import { SignatureBoard } from './signature-board';
 
 const COLOR_TOKENS = [
   'ink-900',
@@ -74,6 +75,8 @@ export default function DevComponentsPage() {
         <PrimitivesBoard theme="light" />
         <PrimitivesBoard theme="dark" />
       </main>
+      <SignatureBoard theme="light" />
+      <SignatureBoard theme="dark" />
     </ToastProvider>
   );
 }
