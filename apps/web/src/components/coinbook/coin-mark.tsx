@@ -12,7 +12,7 @@ export interface CoinMarkProps {
 
 export function CoinMark({ size = 'md', ring = false, className }: CoinMarkProps) {
   return (
-    <span className={cn('coin', SIZE_CLASS[size], ring && 'ring', className)} aria-hidden="true">
+    <span className={cn('coin', SIZE_CLASS[size], ring && 'coin-ring', className)} aria-hidden="true">
       {size === 'sm' ? null : 'C'}
     </span>
   );

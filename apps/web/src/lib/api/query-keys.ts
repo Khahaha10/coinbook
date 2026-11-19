@@ -6,6 +6,12 @@ export const qk = {
   me: ['me'] as const,
   wallets: { all: ['wallets'] as const },
   categories: { all: ['categories'] as const },
+  bills: {
+    all: ['bills'] as const,
+    list: ['bills', 'list'] as const,
+    calendar: (month: string) => ['bills', 'calendar', month] as const,
+    payments: (id: string) => ['bills', 'payments', id] as const,
+  },
   transactions: {
     all: ['transactions'] as const,
     recent: (limit: number) => ['transactions', 'recent', limit] as const,
