@@ -8,6 +8,7 @@ import { EnvModule } from './config/env.module';
 import { PrismaModule } from './database/prisma.module';
 import { HealthController } from './modules/health/health.controller';
 import { InternalModule } from './modules/internal/internal.module';
+import { TelegramModule } from './modules/telegram/telegram.module';
 import { BillsModule } from './modules/bills/bills.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { MeModule } from './modules/me/me.module';
@@ -32,6 +33,7 @@ import { WalletsModule } from './modules/wallets/wallets.module';
     PublicSplitsModule,
     ReportsModule,
     InternalModule,
+    TelegramModule,
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
   ],
   controllers: [HealthController],

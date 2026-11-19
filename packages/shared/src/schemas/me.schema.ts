@@ -40,3 +40,9 @@ export const bootstrapQuerySchema = z.object({
     .transform((v) => v === 'true'),
 });
 export type BootstrapQuery = z.infer<typeof bootstrapQuerySchema>;
+
+export interface TelegramLinkDto {
+  code: string;
+  url: string;
+  expiresAt: string;
+}

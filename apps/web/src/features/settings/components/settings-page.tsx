@@ -1,8 +1,14 @@
 'use client';
 
-import { REMIND_DAY_OPTIONS, type CategoryDto, type MeDto, type UpdateMeInput } from '@coinbook/shared';
+import {
+  REMIND_DAY_OPTIONS,
+  type CategoryDto,
+  type MeDto,
+  type UpdateMeInput,
+} from '@coinbook/shared';
 import { LogOut, Mail, Monitor, Moon, Pencil, Plus, Send, Sun } from 'lucide-react';
-import { useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { Badge, Panel } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CategoryIcon } from '@/components/ui/category-icon';
@@ -10,10 +16,15 @@ import { Segmented, Switch, ToggleChip } from '@/components/ui/controls';
 import { Field, Input } from '@/components/ui/field';
 import { useToast } from '@/components/ui/toast';
 import { useSignOut } from '@/features/auth/hooks/use-auth';
-import { CategorySheet, type CategorySheetState } from '@/features/categories/components/category-sheet';
+import {
+  CategorySheet,
+  type CategorySheetState,
+} from '@/features/categories/components/category-sheet';
 import { useCategories } from '@/features/categories/hooks/use-categories';
 import { useMe } from '@/features/me/hooks/use-me';
+import { useTelegramLink } from '@/features/me/hooks/use-telegram-link';
 import { useUpdateMe } from '@/features/me/hooks/use-update-me';
+import { qk } from '@/lib/api/query-keys';
 import { toShellUser } from '@/components/shell/shell-user';
 import { DEFAULT_ERROR_MESSAGE } from '@/lib/api/errors';
 import { applyTheme, readTheme, type Theme } from '@/lib/theme';
@@ -29,7 +40,9 @@ const THEME_OPTIONS = [
 
 function IconCircle({ children, tone = 'desk' }: { children: ReactNode; tone?: 'desk' | 'tag' }) {
   return (
-    <span className={tone === 'tag' ? 'av bg-tag-bg text-tag-text' : 'av bg-desk text-text'}>{children}</span>
+    <span className={tone === 'tag' ? 'av bg-tag-bg text-tag-text' : 'av bg-desk text-text'}>
+      {children}
+    </span>
   );
 }
 
@@ -62,7 +75,12 @@ function ProfileSection({ me, save }: { me: MeDto; save: (patch: { name?: string
             }}
           />
         </Field>
-        <Field label="Email" htmlFor="st-e" hint="Email dari akun Google, tidak bisa diubah di sini." hintId="st-e-h">
+        <Field
+          label="Email"
+          htmlFor="st-e"
+          hint="Email dari akun Google, tidak bisa diubah di sini."
+          hintId="st-e-h"
+        >
           <Input id="st-e" value={me.email ?? ''} readOnly aria-describedby="st-e-h" />
         </Field>
       </div>
@@ -70,7 +88,13 @@ function ProfileSection({ me, save }: { me: MeDto; save: (patch: { name?: string
   );
 }
 
-function CategoriesSection({ categories, onOpen }: { categories: CategoryDto[]; onOpen: (s: CategorySheetState) => void }) {
+function CategoriesSection({
+  categories,
+  onOpen,
+}: {
+  categories: CategoryDto[];
+  onOpen: (s: CategorySheetState) => void;
+}) {
   return (
     <Panel as="section" aria-labelledby="st-cat">
       <div className={`mb-2 ${ROW}`}>
@@ -91,10 +115,17 @@ function CategoriesSection({ categories, onOpen }: { categories: CategoryDto[]; 
               </IconCircle>
               <span className="flex flex-col">
                 <span className="font-medium">{c.name}</span>
-                <span className="text-meta text-muted">{c.type === 'INCOME' ? 'Pemasukan' : 'Pengeluaran'}</span>
+                <span className="text-meta text-muted">
+                  {c.type === 'INCOME' ? 'Pemasukan' : 'Pengeluaran'}
+                </span>
               </span>
             </span>
-            <Button variant="quiet" icon aria-label={`Ubah ${c.name}`} onClick={() => onOpen({ mode: 'edit', category: c })}>
+            <Button
+              variant="quiet"
+              icon
+              aria-label={`Ubah ${c.name}`}
+              onClick={() => onOpen({ mode: 'edit', category: c })}
+            >
               <Pencil size={20} aria-hidden="true" />
             </Button>
           </li>
@@ -104,9 +135,51 @@ function CategoriesSection({ categories, onOpen }: { categories: CategoryDto[]; 
   );
 }
 
+const LINK_POLL_MS = 3000;
+
+function useTelegramConnect(connected: boolean) {
+  const link = useTelegramLink();
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const [pending, setPending] = useState<{ code: string; expiresAt: number } | null>(null);
+
+  useEffect(() => {
+    if (!pending || connected) return;
+    const timer = setInterval(() => {
+      if (Date.now() > pending.expiresAt) setPending(null);
+      else void queryClient.invalidateQueries({ queryKey: qk.me });
+    }, LINK_POLL_MS);
+    return () => clearInterval(timer);
+  }, [pending, connected, queryClient]);
+
+  const start = () => {
+    const popup = window.open('', '_blank');
+    link.mutate(undefined, {
+      onSuccess: (dto) => {
+        setPending({ code: dto.code, expiresAt: Date.parse(dto.expiresAt) });
+        if (popup) {
+          popup.opener = null;
+          popup.location.href = dto.url;
+        } else {
+          window.location.assign(dto.url);
+        }
+      },
+      onError: () => {
+        popup?.close();
+        toast.show(DEFAULT_ERROR_MESSAGE, 'error');
+      },
+    });
+  };
+
+  return { start, code: connected ? null : (pending?.code ?? null), busy: link.isPending };
+}
+
 function NotificationsSection({ me, save }: { me: MeDto; save: (patch: UpdateMeInput) => void }) {
+  const telegram = useTelegramConnect(me.telegramConnected);
   const toggleDay = (day: number, on: boolean) => {
-    const days = on ? [...me.defaultRemindDays, day] : me.defaultRemindDays.filter((d) => d !== day);
+    const days = on
+      ? [...me.defaultRemindDays, day]
+      : me.defaultRemindDays.filter((d) => d !== day);
     save({ defaultRemindDays: REMIND_DAY_OPTIONS.filter((d) => days.includes(d)) });
   };
   return (
@@ -126,12 +199,17 @@ function NotificationsSection({ me, save }: { me: MeDto; save: (patch: UpdateMeI
                 ? `Pengingat dikirim ke @${me.telegramUsername ?? ''}`
                 : 'Belum terhubung. Kirim kode ke bot Coinbook.'}
             </span>
+            {telegram.code ? (
+              <span className="text-meta text-muted" role="status">
+                Kode: <span className="font-medium tracking-wider text-text">{telegram.code}</span>
+              </span>
+            ) : null}
           </span>
         </span>
         {me.telegramConnected ? (
           <Badge variant="paid">Terhubung</Badge>
         ) : (
-          <Button variant="secondary" disabled>
+          <Button variant="secondary" onClick={telegram.start} disabled={telegram.busy}>
             Hubungkan Telegram
           </Button>
         )}
@@ -172,7 +250,13 @@ function NotificationsSection({ me, save }: { me: MeDto; save: (patch: UpdateMeI
   );
 }
 
-function BankSection({ me, save }: { me: MeDto; save: (patch: { bankInfo: string | null }) => void }) {
+function BankSection({
+  me,
+  save,
+}: {
+  me: MeDto;
+  save: (patch: { bankInfo: string | null }) => void;
+}) {
   const [value, setValue] = useState(me.bankInfo ?? '');
   return (
     <Panel as="section" aria-labelledby="st-bank">
@@ -182,7 +266,11 @@ function BankSection({ me, save }: { me: MeDto; save: (patch: { bankInfo: string
       <Field
         label="Rekening untuk teks patungan"
         htmlFor="st-acc"
-        hint={value.trim() ? `Muncul sebagai “Transfer ke ${value.trim()}” di link dan teks WhatsApp.` : undefined}
+        hint={
+          value.trim()
+            ? `Muncul sebagai “Transfer ke ${value.trim()}” di link dan teks WhatsApp.`
+            : undefined
+        }
         hintId="st-acc-h"
       >
         <Input
@@ -251,7 +339,11 @@ export function SettingsPage() {
           <BankSection key={`bank-${me.data.id}`} me={me.data} save={save} />
           <ThemeSection />
           <div>
-            <Button variant="secondary" onClick={() => signOut.mutate()} disabled={signOut.isPending}>
+            <Button
+              variant="secondary"
+              onClick={() => signOut.mutate()}
+              disabled={signOut.isPending}
+            >
               <LogOut size={20} aria-hidden="true" />
               Keluar
             </Button>

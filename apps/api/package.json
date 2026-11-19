@@ -12,7 +12,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:status": "prisma migrate status",
-    "prisma:seed": "node dist/seed.js"
+    "prisma:seed": "node dist/seed.js",
+    "telegram:set-webhook": "node dist/scripts/set-telegram-webhook.js"
   },
   "dependencies": {
     "@coinbook/shared": "workspace:*",
