@@ -6,5 +6,6 @@ export function BillStatusBadge({ bill }: { bill: Pick<BillDto, 'status' | 'days
   if (bill.status === 'OVERDUE') {
     return <Badge variant="overdue">Terlambat {-bill.daysUntilDue} hari</Badge>;
   }
+  if (bill.daysUntilDue === 0) return <Badge variant="due">Jatuh tempo hari ini</Badge>;
   return <Badge variant="due">Jatuh tempo H-{bill.daysUntilDue}</Badge>;
 }
