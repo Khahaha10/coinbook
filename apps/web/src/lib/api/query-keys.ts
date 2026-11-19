@@ -26,5 +26,7 @@ export const qk = {
     all: ['reports'] as const,
     dashboard: ['reports', 'dashboard'] as const,
     summary: (month: string) => ['reports', 'summary', month] as const,
+    byCategory: (month: string) => ['reports', 'by-category', month] as const,
+    trend: (months: number) => ['reports', 'trend', months] as const,
   },
 };

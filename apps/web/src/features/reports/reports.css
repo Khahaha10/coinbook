@@ -1,0 +1,133 @@
+.rp-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+@container cb (min-width: 1024px) {
+  .rp-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+.tr-wrap {
+  position: relative;
+  height: 200px;
+  margin: 16px 0 32px 40px;
+}
+.tr-grid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.tr-grid span {
+  position: relative;
+  height: 0;
+  border-top: 1px solid var(--rule);
+}
+.tr-grid span::before {
+  content: attr(data-v);
+  position: absolute;
+  right: calc(100% + 8px);
+  top: -9px;
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.tr-cols {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+}
+.tr-col {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  height: 100%;
+}
+.tr-col .b {
+  width: clamp(10px, 1.6cqi, 20px);
+  border-radius: 3px 3px 0 0;
+}
+.tr-col .bi {
+  background: var(--income);
+}
+.tr-col .be {
+  background: var(--expense);
+}
+.tr-col .lb {
+  position: absolute;
+  bottom: -26px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend i {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.bar-r {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'n v' 'b b';
+  gap: 6px 12px;
+  align-items: center;
+}
+.bar-r .n {
+  grid-area: n;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.bar-r .v {
+  grid-area: v;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.bar-r .tr {
+  grid-area: b;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--desk);
+  overflow: hidden;
+}
+.bar-r .tr > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--ink-700);
+}
+@container cb (min-width: 768px) {
+  .bar-r {
+    grid-template-columns: 200px minmax(0, 1fr) 112px;
+    grid-template-areas: 'n b v';
+  }
+  .bar-r .v {
+    text-align: right;
+  }
+}
