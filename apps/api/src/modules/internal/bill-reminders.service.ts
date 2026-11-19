@@ -11,11 +11,10 @@ import {
 import { businessToday } from '../../common/clock';
 import { ENV, type Env } from '../../config/env';
 import { PrismaService } from '../../database/prisma.service';
-import { NotificationsService } from '../notifications/notifications.service';
+import { emailSubject, NotificationsService } from '../notifications/notifications.service';
 
 const BATCH_SIZE = 100;
 const MAX_REMIND_DAYS = 3;
-const SUBJECT = 'Pengingat tagihan Coinbook';
 
 const dayMonth = new Intl.DateTimeFormat('id-ID', {
   day: 'numeric',
@@ -138,7 +137,7 @@ export class BillRemindersService {
       return this.notifications.sendTelegram(bill.user.telegramChatId, text);
     }
     if (channel === 'EMAIL' && bill.user.email) {
-      return this.notifications.sendEmail(bill.user.email, SUBJECT, text);
+      return this.notifications.sendEmail(bill.user.email, emailSubject(text), text);
     }
     return Promise.resolve();
   }

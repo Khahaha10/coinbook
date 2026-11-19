@@ -1,6 +1,11 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { Profile } from '@prisma/client';
 import { ENV, type Env } from '../../config/env';
+import { EmailService } from './email.service';
+
+export function emailSubject(text: string): string {
+  return text.split('\n')[0] ?? 'Coinbook';
+}
 
 type Recipient = Pick<Profile, 'id' | 'email' | 'emailReminders' | 'telegramChatId' | 'isDemo'>;
 
@@ -8,7 +13,10 @@ type Recipient = Pick<Profile, 'id' | 'email' | 'emailReminders' | 'telegramChat
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
 
-  constructor(@Inject(ENV) private readonly env: Env) {}
+  constructor(
+    @Inject(ENV) private readonly env: Env,
+    private readonly email: EmailService,
+  ) {}
 
   notifyInBackground(recipient: Recipient, text: string): void {
     this.notify(recipient, text).catch((e: unknown) => {
@@ -25,7 +33,7 @@ export class NotificationsService {
       return;
     }
     if (recipient.emailReminders && recipient.email) {
-      this.logger.log(`[email fallback] to=${recipient.id} text=${text}`);
+      await this.sendEmail(recipient.email, emailSubject(text), text);
       return;
     }
     this.logger.log(`No notification channel for ${recipient.id}`);
@@ -35,8 +43,8 @@ export class NotificationsService {
     return Boolean(this.env.TELEGRAM_BOT_TOKEN);
   }
 
-  async sendEmail(to: string, subject: string, text: string): Promise<void> {
-    this.logger.log(`[email] to=${to} subject=${subject} text=${text}`);
+  sendEmail(to: string, subject: string, text: string): Promise<void> {
+    return this.email.send(to, subject, text);
   }
 
   async sendTelegram(chatId: string, text: string): Promise<void> {
