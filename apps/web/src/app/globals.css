@@ -2,6 +2,7 @@
 @import '../components/coinbook/coinbook.css' layer(components);
 @import '../components/shell/shell.css' layer(components);
 @import '../features/bills/bills.css' layer(components);
+@import '../features/splits/splits.css' layer(components);
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
