@@ -1,7 +1,11 @@
-import type { CreateSplitInput, SplitDetailDto } from '@coinbook/shared';
+import type { CreateSplitInput, SplitDetailDto, SplitListDto } from '@coinbook/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api/client';
 import { qk } from '@/lib/api/query-keys';
+
+export function useSplits() {
+  return useQuery({ queryKey: qk.splits.list, queryFn: () => api<SplitListDto>('/splits') });
+}
 
 export function useSplit(id: string) {
   return useQuery({ queryKey: qk.splits.detail(id), queryFn: () => api<SplitDetailDto>(`/splits/${id}`) });

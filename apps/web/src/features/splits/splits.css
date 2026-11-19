@@ -337,3 +337,68 @@
     transform: rotate(-0.6deg);
   }
 }
+.srow {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  grid-template-areas: 'i t a' 'i m s';
+  gap: 4px 14px;
+  align-items: center;
+  padding: 16px 0;
+  border-top: 1px dashed var(--rule);
+  text-decoration: none;
+  color: var(--text);
+  transition: background-color 0.15s;
+}
+li:first-child > .srow {
+  border-top: 0;
+}
+.srow:hover .st {
+  text-decoration: underline;
+}
+.srow .ico {
+  grid-area: i;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--desk);
+  display: grid;
+  place-items: center;
+  color: var(--ink-700);
+}
+.srow .st {
+  grid-area: t;
+  font-weight: 500;
+  min-width: 0;
+}
+.srow .sm {
+  grid-area: m;
+  font-size: 13px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.srow .sa {
+  grid-area: a;
+  text-align: right;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.srow .ss {
+  grid-area: s;
+  justify-self: end;
+}
+.segs {
+  display: inline-flex;
+  gap: 3px;
+}
+.segs span {
+  width: 16px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--rule-strong);
+}
+.segs span.f {
+  background: var(--ink-700);
+}
