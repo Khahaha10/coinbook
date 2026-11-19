@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import {
   AddTransactionProvider,
@@ -12,8 +13,13 @@ import { toShellUser } from './shell-user';
 function Frame({ children }: { children: ReactNode }) {
   const me = useMe();
   const addTransaction = useAddTransaction();
+  const pathname = usePathname();
   return (
-    <AppShell user={toShellUser(me.data?.name ?? '')} onAddTransaction={addTransaction.open}>
+    <AppShell
+      user={toShellUser(me.data?.name ?? '')}
+      onAddTransaction={addTransaction.open}
+      hideBottomNav={pathname === '/splits/new'}
+    >
       {children}
     </AppShell>
   );
