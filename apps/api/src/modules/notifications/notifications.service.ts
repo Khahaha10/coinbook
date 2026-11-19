@@ -31,7 +31,15 @@ export class NotificationsService {
     this.logger.log(`No notification channel for ${recipient.id}`);
   }
 
-  private async sendTelegram(chatId: string, text: string): Promise<void> {
+  get telegramEnabled(): boolean {
+    return Boolean(this.env.TELEGRAM_BOT_TOKEN);
+  }
+
+  async sendEmail(to: string, subject: string, text: string): Promise<void> {
+    this.logger.log(`[email] to=${to} subject=${subject} text=${text}`);
+  }
+
+  async sendTelegram(chatId: string, text: string): Promise<void> {
     const res = await fetch(
       `https://api.telegram.org/bot${this.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
       {
