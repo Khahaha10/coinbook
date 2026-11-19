@@ -43,8 +43,8 @@ export function ReceiptSlip({
         {groups.map((group, i) => (
           <Fragment key={i}>
             {i > 0 ? <hr className="rl" /> : null}
-            {group.map((line) => (
-              <div key={line.label} className={cn('ln', line.muted && 'mu')}>
+            {group.map((line, j) => (
+              <div key={`${j}-${line.label}`} className={cn('ln', line.muted && 'mu')}>
                 <span>{line.label}</span>
                 <span>{line.value}</span>
               </div>

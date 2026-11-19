@@ -9,3 +9,7 @@ export async function serverApi<T>(path: string, options: RequestOptions = {}): 
   if (response.status === 401) redirect('/login');
   return parse<T>(response);
 }
+
+export async function publicApi<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  return parse<T>(await send(path, options, undefined));
+}

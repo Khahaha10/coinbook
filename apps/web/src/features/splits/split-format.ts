@@ -18,7 +18,7 @@ export function longDate(date: DateOnly): string {
   return longFormat.format(fromDateOnly(date));
 }
 
-export function extrasLabel(split: Pick<SplitDetailDto, 'discountAmount'>): string {
+export function extrasLabel(split: { discountAmount: number }): string {
   return split.discountAmount > 0 ? 'Pajak, service, diskon' : 'Pajak + service';
 }
 
