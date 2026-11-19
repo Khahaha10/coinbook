@@ -20,6 +20,7 @@ import {
 import { useLedger } from '../hooks/use-ledger';
 import { toPassbookMonths } from '../to-passbook';
 import { useAddTransaction } from './add-transaction';
+import { EditTransaction } from './edit-transaction';
 import { LedgerFilters } from './ledger-filters';
 import { SummaryPanel } from './summary-panel';
 
@@ -46,6 +47,7 @@ export function TransactionsPage() {
   const state = useMemo(() => parseFilters(new URLSearchParams(params.toString())), [params]);
   const [query, setQuery] = useState(state.q);
   const addTransaction = useAddTransaction();
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const wallets = useWallets();
   const categories = useCategories();
@@ -97,6 +99,7 @@ export function TransactionsPage() {
         <Passbook
           balance={wallets.data ? formatRupiah(wallets.data.total) : ''}
           months={months}
+          onRowSelect={setEditingId}
           bodyClassName={ledger.isPending ? 'min-h-80' : undefined}
           empty={
             !ledger.isPending && isUnfiltered ? (
@@ -124,6 +127,10 @@ export function TransactionsPage() {
         />
         {summary.data ? <SummaryPanel summary={summary.data} /> : null}
       </div>
+      <EditTransaction
+        transaction={rows.find((r) => r.id === editingId) ?? null}
+        onClose={() => setEditingId(null)}
+      />
     </>
   );
 }

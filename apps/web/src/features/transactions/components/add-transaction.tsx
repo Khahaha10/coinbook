@@ -1,14 +1,13 @@
 'use client';
 
-import type { CreateTransactionInput } from '@coinbook/shared';
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { Sheet } from '@/components/ui/sheet';
 import { useToast } from '@/components/ui/toast';
 import { useCategories } from '@/features/categories/hooks/use-categories';
 import { useWallets } from '@/features/wallets/hooks/use-wallets';
 import { DEFAULT_ERROR_MESSAGE } from '@/lib/api/errors';
-import { useCreateTransaction } from '../hooks/use-create-transaction';
-import { TransactionForm } from './transaction-form';
+import { useCreateTransaction } from '../hooks/use-transaction-mutations';
+import { TransactionForm, type TransactionFormValues } from './transaction-form';
 
 interface AddTransactionApi {
   open: () => void;
@@ -37,7 +36,10 @@ export function AddTransactionProvider({ children }: { children: ReactNode }) {
     setOpen(true);
   };
 
-  const submit = (input: CreateTransactionInput) =>
+  const submit = ({ type, amount, walletId, toWalletId, categoryId, date, note }: TransactionFormValues) => {
+    const base = { amount, walletId, date, note: note || undefined };
+    const input =
+      type === 'TRANSFER' ? { type, toWalletId, ...base } : { type, categoryId, ...base };
     create.mutate(input, {
       onSuccess: (tx) => {
         setLastCreatedId(tx.id);
@@ -46,8 +48,7 @@ export function AddTransactionProvider({ children }: { children: ReactNode }) {
       },
       onError: () => toast.show(DEFAULT_ERROR_MESSAGE, 'error'),
     });
-
-  const activeWallets = wallets.data?.data.filter((w) => !w.isArchived) ?? [];
+  };
 
   return (
     <AddTransactionContext.Provider value={{ open, lastCreatedId }}>
@@ -56,7 +57,7 @@ export function AddTransactionProvider({ children }: { children: ReactNode }) {
         {wallets.data && categories.data ? (
           <TransactionForm
             key={formKey}
-            wallets={activeWallets}
+            wallets={wallets.data.data}
             categories={categories.data}
             pending={create.isPending}
             onSubmit={submit}

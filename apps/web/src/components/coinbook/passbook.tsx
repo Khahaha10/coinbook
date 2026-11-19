@@ -33,6 +33,7 @@ export interface PassbookProps {
   empty?: ReactNode;
   className?: string;
   bodyClassName?: string;
+  onRowSelect?: (id: string) => void;
 }
 
 function Mutation({ kind, amount }: { kind: PassbookRowKind; amount: number }) {
@@ -63,8 +64,10 @@ export function Passbook({
   empty,
   className,
   bodyClassName,
+  onRowSelect,
 }: PassbookProps) {
   const hasRows = months.some((m) => m.rows.length > 0);
+  const RowTag = onRowSelect ? 'button' : 'div';
   return (
     <div className={cn('pb', className)}>
       <div className="pb-cover">
@@ -86,9 +89,16 @@ export function Passbook({
           <Fragment key={month.label}>
             {showMonthLabels ? <div className="pb-month">{month.label}</div> : null}
             {month.rows.map((row, i) => (
-              <div
+              <RowTag
                 key={row.id}
-                className={cn('pb-row', row.isNew && 'new')}
+                {...(onRowSelect
+                  ? { type: 'button' as const, onClick: () => onRowSelect(row.id), 'aria-haspopup': 'dialog' as const }
+                  : {})}
+                className={cn(
+                  'pb-row',
+                  row.isNew && 'new',
+                  onRowSelect && 'w-full cursor-pointer bg-transparent text-left hover:bg-desk',
+                )}
                 style={!showMonthLabels && i === 0 ? { borderTop: 0 } : undefined}
               >
                 <span className="d">{row.date}</span>
@@ -98,7 +108,7 @@ export function Passbook({
                 </span>
                 <Mutation kind={row.kind} amount={row.amount} />
                 <span className="s">{formatRupiah(row.balanceAfter, { prefix: false })}</span>
-              </div>
+              </RowTag>
             ))}
           </Fragment>
         ))}
