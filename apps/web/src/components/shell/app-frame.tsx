@@ -3,17 +3,8 @@
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { useMe } from '@/features/me/hooks/use-me';
-import { AppShell, type ShellUser } from './app-shell';
-
-function toShellUser(name: string): ShellUser {
-  const initials = name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join('');
-  return { name, initials };
-}
+import { AppShell } from './app-shell';
+import { toShellUser } from './shell-user';
 
 export function AppFrame({ children }: { children: ReactNode }) {
   const router = useRouter();

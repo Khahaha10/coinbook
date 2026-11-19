@@ -39,3 +39,6 @@ export function Button({ variant, icon, full, className, type = 'button', ...pro
     <button type={type} className={buttonClasses({ variant, icon, full, className })} {...props} />
   );
 }
+
+export const linkClasses =
+  'inline-flex min-h-11 items-center font-medium text-ink-700 no-underline hover:underline';
