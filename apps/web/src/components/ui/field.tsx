@@ -1,4 +1,4 @@
-import { CircleAlert } from 'lucide-react';
+import { CalendarDays, CircleAlert } from 'lucide-react';
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react';
 import { cn } from '@/lib/cn';
 
@@ -85,6 +85,25 @@ export function Select({ className, style, ...props }: SelectHTMLAttributes<HTML
       )}
       style={{ backgroundImage: CHEVRON, ...style }}
       {...props}
+    />
+  );
+}
+
+export function DateInput({ className, onClick, ...props }: Omit<InputProps, 'type' | 'icon'>) {
+  return (
+    <Input
+      {...props}
+      type="date"
+      icon={<CalendarDays size={18} />}
+      onClick={(e) => {
+        onClick?.(e);
+        try {
+          e.currentTarget.showPicker();
+        } catch {
+          return;
+        }
+      }}
+      className={cn('[&::-webkit-calendar-picker-indicator]:hidden', className)}
     />
   );
 }

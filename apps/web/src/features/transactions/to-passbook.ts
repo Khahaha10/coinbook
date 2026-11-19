@@ -18,13 +18,17 @@ export function toPassbookRow(tx: TransactionDto, isNew = false): PassbookRow {
   };
 }
 
-export function toPassbookMonths(transactions: TransactionDto[]): PassbookMonth[] {
+export function toPassbookMonths(
+  transactions: TransactionDto[],
+  newId: string | null = null,
+): PassbookMonth[] {
   const months: PassbookMonth[] = [];
   for (const tx of transactions) {
     const label = formatMonthYear(monthOf(tx.date));
     const last = months.at(-1);
-    if (last?.label === label) last.rows.push(toPassbookRow(tx));
-    else months.push({ label, rows: [toPassbookRow(tx)] });
+    const row = toPassbookRow(tx, tx.id === newId);
+    if (last?.label === label) last.rows.push(row);
+    else months.push({ label, rows: [row] });
   }
   return months;
 }

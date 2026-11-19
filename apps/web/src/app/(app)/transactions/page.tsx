@@ -1,0 +1,10 @@
+import { Suspense } from 'react';
+import { TransactionsPage } from '@/features/transactions/components/transactions-page';
+
+export default function Page() {
+  return (
+    <Suspense>
+      <TransactionsPage />
+    </Suspense>
+  );
+}

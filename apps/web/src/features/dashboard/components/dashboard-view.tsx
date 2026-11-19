@@ -13,9 +13,10 @@ import type { ReactNode } from 'react';
 import { Passbook } from '@/components/coinbook/passbook';
 import { MobileTopBar, type ShellUser } from '@/components/shell/app-shell';
 import { Panel } from '@/components/ui/badge';
-import { buttonClasses, linkClasses } from '@/components/ui/button';
+import { Button, linkClasses } from '@/components/ui/button';
 import { BillStatusBadge } from '@/features/bills/components/bill-status-badge';
 import { DebtStatusBadge } from '@/features/splits/components/debt-status-badge';
+import { useAddTransaction } from '@/features/transactions/components/add-transaction';
 import { toPassbookMonths } from '@/features/transactions/to-passbook';
 import { cn } from '@/lib/cn';
 import { formatDayMonth, formatLongDate, formatMonthYear } from '@/lib/format-date';
@@ -166,15 +167,16 @@ function PassbookFooter({ count }: { count: number }) {
 }
 
 function PassbookEmpty() {
+  const addTransaction = useAddTransaction();
   return (
     <>
       <p className="max-w-[70ch] text-body">
         Belum ada catatan bulan ini. Catat pengeluaran pertamamu.
       </p>
-      <Link className={buttonClasses()} href="/transactions">
+      <Button onClick={addTransaction.open}>
         <Plus size={20} aria-hidden="true" />
         Catat pengeluaran
-      </Link>
+      </Button>
     </>
   );
 }
@@ -189,8 +191,9 @@ export interface DashboardViewProps {
 
 export function DashboardView({ user, firstName, report, wallets, recent }: DashboardViewProps) {
   const hasRows = recent.length > 0;
+  const { lastCreatedId } = useAddTransaction();
   const months = hasRows
-    ? toPassbookMonths(recent)
+    ? toPassbookMonths(recent, lastCreatedId)
     : [{ label: formatMonthYear(report.month), rows: [] }];
   return (
     <>

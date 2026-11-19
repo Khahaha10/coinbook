@@ -48,7 +48,7 @@ for (let i = 0; i < count; i += 1) {
     };
   });
   const file = resolve(outDir, `${slug(title)}.png`);
-  await page.screenshot({ path: file, clip: { x: left, y: top, width, height } });
+  await page.screenshot({ path: file, clip: { x: left, y: top, width, height }, animations: 'disabled' });
   console.log(`${slug(title)}.png ${width}x${height}`);
 }
 await browser.close();
