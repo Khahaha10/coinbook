@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { IBM_Plex_Mono, Plus_Jakarta_Sans } from 'next/font/google';
 import { env } from '@/lib/env';
 import { themeInitScript } from '@/lib/theme';
+import { Providers } from './providers';
 import './globals.css';
 
 const jakarta = Plus_Jakarta_Sans({
@@ -32,7 +33,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
