@@ -4,8 +4,9 @@ import type {
   BillListDto,
   BillPaymentDto,
   CreateBillInput,
+  UpdateBillInput,
 } from '@coinbook/shared';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api/client';
 import { qk } from '@/lib/api/query-keys';
 
@@ -28,15 +29,35 @@ export function useBillPayments(id: string | null) {
   });
 }
 
+function invalidateBills(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: qk.bills.all }),
+    queryClient.invalidateQueries({ queryKey: qk.reports.all }),
+  ]);
+}
+
 export function useCreateBill() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: CreateBillInput) => api<BillDto>('/bills', { method: 'POST', body: input }),
-    onSuccess: () =>
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: qk.bills.all }),
-        queryClient.invalidateQueries({ queryKey: qk.reports.all }),
-      ]),
+    onSuccess: () => invalidateBills(queryClient),
+  });
+}
+
+export function useUpdateBill() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: UpdateBillInput }) =>
+      api<BillDto>(`/bills/${id}`, { method: 'PATCH', body: input }),
+    onSuccess: () => invalidateBills(queryClient),
+  });
+}
+
+export function useDeactivateBill() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api<BillDto>(`/bills/${id}/deactivate`, { method: 'POST' }),
+    onSuccess: () => invalidateBills(queryClient),
   });
 }
 

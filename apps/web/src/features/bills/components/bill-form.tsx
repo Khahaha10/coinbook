@@ -4,11 +4,12 @@ import {
   REMIND_DAY_OPTIONS,
   todayInJakarta,
   type BillCycle,
+  type BillDto,
   type CategoryDto,
   type CreateBillInput,
   type WalletDto,
 } from '@coinbook/shared';
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Segmented, ToggleChip } from '@/components/ui/controls';
 import { DateInput, Field, Input, Select } from '@/components/ui/field';
@@ -29,6 +30,8 @@ export interface BillFormProps {
   categories: CategoryDto[];
   defaultRemindDays: number[];
   pending: boolean;
+  initial?: BillDto;
+  footer?: ReactNode;
   onSubmit: (input: CreateBillInput) => void;
 }
 
@@ -38,17 +41,19 @@ export function BillForm({
   categories,
   defaultRemindDays,
   pending,
+  initial,
+  footer,
   onSubmit,
 }: BillFormProps) {
-  const active = wallets.filter((w) => !w.isArchived);
+  const active = wallets.filter((w) => !w.isArchived || w.id === initial?.wallet.id);
   const expense = categories.filter((c) => c.type === 'EXPENSE');
-  const [name, setName] = useState('');
-  const [amount, setAmount] = useState<number | null>(null);
-  const [cycle, setCycle] = useState<BillCycle>('MONTHLY');
-  const [dueDate, setDueDate] = useState(todayInJakarta());
-  const [walletId, setWalletId] = useState(active[0]?.id ?? '');
-  const [categoryId, setCategoryId] = useState(expense[0]?.id ?? '');
-  const [remindDays, setRemindDays] = useState<number[]>(defaultRemindDays);
+  const [name, setName] = useState(initial?.name ?? '');
+  const [amount, setAmount] = useState<number | null>(initial?.amount ?? null);
+  const [cycle, setCycle] = useState<BillCycle>(initial?.cycle ?? 'MONTHLY');
+  const [dueDate, setDueDate] = useState(initial?.nextDueDate ?? todayInJakarta());
+  const [walletId, setWalletId] = useState(initial?.wallet.id ?? active[0]?.id ?? '');
+  const [categoryId, setCategoryId] = useState(initial?.category.id ?? expense[0]?.id ?? '');
+  const [remindDays, setRemindDays] = useState<number[]>(initial?.remindDays ?? defaultRemindDays);
   const [errors, setErrors] = useState({ name: false, amount: false });
   const id = (key: string) => `${idPrefix}-${key}`;
 
@@ -153,6 +158,7 @@ export function BillForm({
       <Button type="submit" full disabled={pending}>
         Simpan tagihan
       </Button>
+      {footer}
     </form>
   );
 }

@@ -20,6 +20,7 @@ import { DEFAULT_ERROR_MESSAGE } from '@/lib/api/errors';
 import { useBillCalendar, useBills, useCreateBill, useMarkBillPaid } from '../hooks/use-bills';
 import { BillForm } from './bill-form';
 import { BillRow } from './bill-row';
+import { EditBill } from './edit-bill';
 import { MonthStrip } from './month-strip';
 import { PaymentsSheet } from './payments-sheet';
 
@@ -39,6 +40,7 @@ export function BillsPage() {
   const [justPaid, setJustPaid] = useState<string[]>([]);
   const paying = useRef(new Set<string>());
   const [history, setHistory] = useState<BillDto | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [formKey, setFormKey] = useState(0);
 
@@ -136,6 +138,7 @@ export function BillsPage() {
                     paying={pay.isPending && pay.variables.id === bill.id}
                     onPay={markPaid}
                     onHistory={setHistory}
+                    onEdit={(b) => setEditingId(b.id)}
                   />
                 ))}
               </ul>
@@ -158,6 +161,10 @@ export function BillsPage() {
         {form('s')}
       </Sheet>
       <PaymentsSheet bill={history} onClose={() => setHistory(null)} />
+      <EditBill
+        bill={bills.data?.data.find((b) => b.id === editingId) ?? null}
+        onClose={() => setEditingId(null)}
+      />
     </>
   );
 }

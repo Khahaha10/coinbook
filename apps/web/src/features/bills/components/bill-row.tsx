@@ -21,14 +21,22 @@ export interface BillRowProps {
   paying: boolean;
   onPay: (bill: BillDto) => void;
   onHistory: (bill: BillDto) => void;
+  onEdit: (bill: BillDto) => void;
 }
 
-export function BillRow({ bill, justPaid, paying, onPay, onHistory }: BillRowProps) {
+export function BillRow({ bill, justPaid, paying, onPay, onHistory, onEdit }: BillRowProps) {
   const paid = bill.status === 'PAID';
   return (
     <li className="bill">
       <div className="n">
-        <div className="font-medium">{bill.name}</div>
+        <button
+          type="button"
+          aria-haspopup="dialog"
+          className="block cursor-pointer text-left font-medium hover:underline"
+          onClick={() => onEdit(bill)}
+        >
+          {bill.name}
+        </button>
         <div className="text-meta text-muted">{billMeta(bill)}</div>
       </div>
       <div className="d">
