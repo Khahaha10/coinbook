@@ -23,16 +23,10 @@ export function useStartDemo() {
 }
 
 export function useSignOut() {
-  const router = useRouter();
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
       await createClient().auth.signOut();
     },
-    onSuccess: () => {
-      queryClient.clear();
-      router.push('/');
-      router.refresh();
-    },
+    onSuccess: () => window.location.assign('/'),
   });
 }
