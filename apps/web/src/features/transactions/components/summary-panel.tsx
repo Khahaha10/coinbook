@@ -1,14 +1,9 @@
-import { formatRupiah, type SummaryReportDto, type WalletType } from '@coinbook/shared';
-import { ArrowLeftRight, Banknote, Landmark, Smartphone, type LucideIcon } from 'lucide-react';
+import { formatRupiah, type SummaryReportDto } from '@coinbook/shared';
+import { ArrowLeftRight } from 'lucide-react';
 import { Panel } from '@/components/ui/badge';
+import { WALLET_ICONS } from '@/features/wallets/wallet-types';
 
 const ROW = 'flex min-h-11 items-center justify-between gap-3';
-
-export const WALLET_ICONS: Record<WalletType, LucideIcon> = {
-  BANK: Landmark,
-  EWALLET: Smartphone,
-  CASH: Banknote,
-};
 
 const monthName = new Intl.DateTimeFormat('id-ID', { month: 'long', timeZone: 'UTC' });
 

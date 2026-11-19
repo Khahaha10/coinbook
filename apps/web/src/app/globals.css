@@ -3,6 +3,7 @@
 @import '../components/shell/shell.css' layer(components);
 @import '../features/bills/bills.css' layer(components);
 @import '../features/splits/splits.css' layer(components);
+@import '../features/wallets/wallets.css' layer(components);
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
