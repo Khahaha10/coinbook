@@ -3,7 +3,7 @@ import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react
 import { cn } from '@/lib/cn';
 
 export const controlClasses =
-  'h-11 w-full rounded-control border border-rule bg-paper px-3 text-[15px] text-text transition-[border-color] duration-150 hover:border-rule-strong focus:border-ink-700 focus:outline-2 focus:outline-offset-2 focus:outline-ink-700 aria-invalid:border-expense';
+  'h-11 w-full rounded-control border border-rule bg-paper px-3 text-[15px] text-text transition-[border-color] duration-150 hover:border-rule-strong focus:border-ink-700 focus:outline-2 focus:outline-offset-2 focus:outline-ink-700 aria-invalid:border-expense disabled:cursor-not-allowed disabled:opacity-60';
 
 export interface FieldProps {
   label: string;

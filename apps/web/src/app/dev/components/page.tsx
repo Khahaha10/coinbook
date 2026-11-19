@@ -30,7 +30,11 @@ const COLOR_TOKENS = [
 
 function TokenBoard({ theme }: { theme: 'light' | 'dark' }) {
   return (
-    <section data-theme={theme} className="flex flex-col gap-6 bg-desk p-8 text-text">
+    <section
+      id={theme === 'light' ? 'tokens' : undefined}
+      data-theme={theme}
+      className="flex flex-col gap-6 bg-desk p-8 text-text"
+    >
       <h2 className="text-h2 font-medium leading-[1.2]">Tokens · {theme}</h2>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3">
         {COLOR_TOKENS.map((token) => (
@@ -69,6 +73,15 @@ export default function DevComponentsPage() {
   if (process.env.NODE_ENV === 'production') notFound();
   return (
     <ToastProvider>
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-rule bg-paper px-8 py-4 text-text">
+        <h1 className="text-h1 leading-[1.2] font-medium">Komponen</h1>
+        <nav aria-label="Galeri" className="flex gap-4 text-meta">
+          <a href="#tokens">Tokens</a>
+          <a href="#primitives">Primitives</a>
+          <a href="#signature">Signature</a>
+          <a href="/dev/shell">AppShell</a>
+        </nav>
+      </header>
       <main className="grid min-h-screen grid-cols-1 @min-[1024px]/cb:grid-cols-2">
         <TokenBoard theme="light" />
         <TokenBoard theme="dark" />

@@ -55,6 +55,26 @@ const ROWS: PassbookRow[] = [
   },
 ];
 
+const OCTOBER: PassbookRow[] = [
+  {
+    id: 'o1',
+    date: '31/10',
+    description: 'Pulsa',
+    kind: 'expense',
+    amount: 50000,
+    balanceAfter: 488500,
+  },
+  {
+    id: 'o2',
+    date: '25/10',
+    description: 'Listrik PLN',
+    tag: 'Tagihan',
+    kind: 'expense',
+    amount: 245000,
+    balanceAfter: 600500,
+  },
+];
+
 const TRANSFER: PassbookRow = {
   id: 't',
   date: '09/11',
@@ -86,7 +106,11 @@ export function SignatureBoard({ theme }: { theme: 'light' | 'dark' }) {
   };
 
   return (
-    <section data-theme={theme} className="flex flex-col gap-8 bg-desk p-8 text-text">
+    <section
+      id={theme === 'light' ? 'signature' : undefined}
+      data-theme={theme}
+      className="flex flex-col gap-8 bg-desk p-8 text-text"
+    >
       <h2 className="text-h2 leading-[1.2] font-medium">Signature · {theme}</h2>
 
       <div className="grid grid-cols-2 gap-8">
@@ -114,7 +138,10 @@ export function SignatureBoard({ theme }: { theme: 'light' | 'dark' }) {
         <div className="w-[720px] shrink-0">
           <Passbook
             balance={formatRupiah(balance)}
-            months={[{ label: 'November 2026', rows: [...printed, ...ROWS] }]}
+            months={[
+              { label: 'November 2026', rows: [...printed, ...ROWS] },
+              { label: 'Oktober 2026', rows: OCTOBER },
+            ]}
             footer={
               <>
                 <span className="text-meta text-muted">5 transaksi terakhir</span>
@@ -203,6 +230,19 @@ export function SignatureBoard({ theme }: { theme: 'light' | 'dark' }) {
           ]}
           total="Rp175.500"
           note="Dibayar dulu oleh Rani"
+        />
+        <ReceiptSlip
+          title="Patungan Warung Sate"
+          date="Sabtu, 15 Nov 2026"
+          heading="Bagianmu"
+          groups={[
+            [
+              { label: 'Sate ayam ½', value: '30.000' },
+              { label: 'Es teh', value: '5.000' },
+              { label: 'Pajak, service, diskon', value: '7.000', muted: true },
+            ],
+          ]}
+          total="Rp42.000"
         />
       </div>
     </section>

@@ -96,7 +96,7 @@ export function ToggleChip({
       aria-pressed={pressed}
       onClick={() => onPressedChange(!pressed)}
       className={cn(
-        'group inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border border-rule bg-paper px-3.5 text-sm font-medium text-text transition-[background-color,border-color] duration-150 aria-pressed:border-ink-700 aria-pressed:bg-tag-bg aria-pressed:text-tag-text',
+        'group inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border border-rule bg-paper px-3.5 text-sm font-medium text-text transition-[background-color,border-color] duration-150 aria-pressed:border-ink-700 aria-pressed:bg-tag-bg aria-pressed:text-tag-text disabled:cursor-not-allowed disabled:opacity-60',
         className,
       )}
     >

@@ -1,6 +1,6 @@
 'use client';
 
-import { Copy, Monitor, Moon, Search, Sun, X } from 'lucide-react';
+import { CalendarDays, Copy, Monitor, Moon, Search, Sun, X } from 'lucide-react';
 import { useState } from 'react';
 import { Badge, Panel, Tag } from '@/components/ui/badge';
 import { Button, buttonClasses } from '@/components/ui/button';
@@ -12,6 +12,8 @@ import { useToast } from '@/components/ui/toast';
 
 type TxType = 'out' | 'in' | 'tr';
 type ThemeChoice = 'light' | 'dark' | 'system';
+type Cycle = 'monthly' | 'yearly';
+type Discount = 'nominal' | 'percent';
 
 export function PrimitivesBoard({ theme }: { theme: 'light' | 'dark' }) {
   const id = (name: string): string => `${theme}-${name}`;
@@ -20,13 +22,19 @@ export function PrimitivesBoard({ theme }: { theme: 'light' | 'dark' }) {
   const [empty, setEmpty] = useState<number | null>(null);
   const [type, setType] = useState<TxType>('out');
   const [look, setLook] = useState<ThemeChoice>('light');
+  const [cycle, setCycle] = useState<Cycle>('monthly');
+  const [discount, setDiscount] = useState<Discount>('nominal');
   const [on, setOn] = useState(true);
   const [off, setOff] = useState(false);
   const [days, setDays] = useState({ h3: true, h1: true, h0: false });
   const [open, setOpen] = useState(false);
 
   return (
-    <section data-theme={theme} className="flex flex-col gap-6 bg-desk p-8 text-text">
+    <section
+      id={theme === 'light' ? 'primitives' : undefined}
+      data-theme={theme}
+      className="flex flex-col gap-6 bg-desk p-8 text-text"
+    >
       <h2 className="text-h2 leading-[1.2] font-medium">Primitives · {theme}</h2>
 
       <Panel className="flex flex-col gap-5">
@@ -84,6 +92,52 @@ export function PrimitivesBoard({ theme }: { theme: 'light' | 'dark' }) {
         <Field label="Cari catatan" htmlFor={id('q')}>
           <Input id={id('q')} placeholder="Misal: kopi" icon={<Search size={18} />} />
         </Field>
+        <Field
+          label="Dompet yang dipakai bayar"
+          htmlFor={id('wallet')}
+          hint="Uang dari teman nanti masuk ke dompet ini."
+        >
+          <Select id={id('wallet')} defaultValue="BCA">
+            <option>BCA</option>
+            <option>GoPay</option>
+            <option>Tunai</option>
+          </Select>
+        </Field>
+        <Field
+          label="Email"
+          htmlFor={id('email')}
+          hint="Email dari akun Google, tidak bisa diubah di sini."
+        >
+          <Input id={id('email')} defaultValue="rani@contoh.id" readOnly />
+        </Field>
+        <Field label="Tanggal" htmlFor={id('date')}>
+          <Input id={id('date')} defaultValue="18/11/2026" icon={<CalendarDays size={18} />} />
+        </Field>
+        <Field label="Catatan" htmlFor={id('disabled')}>
+          <Input id={id('disabled')} placeholder="Misal: makan malam" disabled />
+        </Field>
+        <Field label="Siklus" labelAs="span">
+          <Segmented<Cycle>
+            label="Siklus"
+            value={cycle}
+            onChange={setCycle}
+            options={[
+              { value: 'monthly', label: 'Bulanan' },
+              { value: 'yearly', label: 'Tahunan' },
+            ]}
+          />
+        </Field>
+        <Field label="Diskon" labelAs="span">
+          <Segmented<Discount>
+            label="Jenis diskon"
+            value={discount}
+            onChange={setDiscount}
+            options={[
+              { value: 'nominal', label: 'Nominal' },
+              { value: 'percent', label: 'Persen' },
+            ]}
+          />
+        </Field>
         <Field label="Nominal" htmlFor={id('big')} className="col-span-2">
           <MoneyInput id={id('big')} large value={25000} onValueChange={() => undefined} />
         </Field>
@@ -127,6 +181,9 @@ export function PrimitivesBoard({ theme }: { theme: 'light' | 'dark' }) {
             </ToggleChip>
             <ToggleChip pressed={days.h0} onPressedChange={(v) => setDays({ ...days, h0: v })}>
               Hari H
+            </ToggleChip>
+            <ToggleChip pressed={false} onPressedChange={() => undefined} disabled>
+              Nonaktif
             </ToggleChip>
           </div>
         </div>
