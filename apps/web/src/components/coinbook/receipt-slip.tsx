@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, type CSSProperties } from 'react';
 import { cn } from '@/lib/cn';
 import { LunasStamp } from './lunas-stamp';
 
@@ -18,7 +18,9 @@ export interface ReceiptSlipProps {
   highlighted?: boolean;
   paid?: boolean;
   animateStamp?: boolean;
+  stampClassName?: string;
   className?: string;
+  style?: CSSProperties;
 }
 
 export function ReceiptSlip({
@@ -31,10 +33,12 @@ export function ReceiptSlip({
   highlighted = false,
   paid = false,
   animateStamp = false,
+  stampClassName,
   className,
+  style,
 }: ReceiptSlipProps) {
   return (
-    <div className={cn('slip', highlighted && 'me', className)}>
+    <div className={cn('slip', highlighted && 'me', className)} style={style}>
       <div className="rc">
         <div className="t">{title}</div>
         <div className="dt">{date}</div>
@@ -58,7 +62,7 @@ export function ReceiptSlip({
         </div>
         {note ? <div className="note">{note}</div> : null}
       </div>
-      {paid ? <LunasStamp animate={animateStamp} className="slip-stamp" /> : null}
+      {paid ? <LunasStamp animate={animateStamp} className={cn('slip-stamp', stampClassName)} /> : null}
     </div>
   );
 }

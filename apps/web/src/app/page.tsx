@@ -1,3 +1,5 @@
+import { LandingPage } from '@/features/landing/components/landing-page';
+
 export default function Page() {
-  return null;
+  return <LandingPage />;
 }
