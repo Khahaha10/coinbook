@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=nextjs,react,ts,tailwind,nestjs,prisma,supabase,postgres,vercel,githubactions,pnpm" alt="Tech stack: Next.js, React, TypeScript, Tailwind CSS, NestJS, Prisma, Supabase, PostgreSQL, Vercel, GitHub Actions, pnpm">
+  <img src="https://skillicons.dev/icons?i=nextjs,react,ts,tailwind,nestjs,prisma,supabase,postgres,netlify,githubactions,pnpm" alt="Tech stack: Next.js, React, TypeScript, Tailwind CSS, NestJS, Prisma, Supabase, PostgreSQL, Netlify, GitHub Actions, pnpm">
 </p>
 
 ---
@@ -70,7 +70,7 @@ In plain words: the **website** is what you see, the **API** is the brain that d
 flowchart LR
     user(["You (browser)"])
     friend(["Friend (share link)"])
-    web["Website<br/>Next.js on Vercel"]
+    web["Website<br/>Next.js on Netlify"]
     api["API<br/>NestJS on Render"]
     auth["Sign-in<br/>Supabase Auth"]
     db[("Database<br/>Supabase Postgres")]
@@ -107,7 +107,7 @@ What happens when you mark a bill as paid:
 | <img src="https://cdn.simpleicons.org/telegram" width="20" alt="">                | **Telegram Bot API**                  | Bill reminders and "my friend says they paid" messages               |
 | <img src="https://cdn.simpleicons.org/resend/000000/ffffff" width="20" alt="">    | **Resend**                            | The same notifications by email                                      |
 | <img src="https://cdn.simpleicons.org/githubactions" width="20" alt="">           | **GitHub Actions**                    | Checks on every push, daily reminder and clean-up jobs               |
-| <img src="https://cdn.simpleicons.org/vercel/000000/ffffff" width="20" alt="">    | **Vercel**                            | Hosting the website                                                  |
+| <img src="https://cdn.simpleicons.org/netlify" width="20" alt="">                 | **Netlify**                           | Hosting the website                                                  |
 | <img src="https://cdn.simpleicons.org/render/000000/ffffff" width="20" alt="">    | **Render**                            | Hosting the API                                                      |
 | <img src="https://cdn.simpleicons.org/turborepo/EF4444" width="20" alt="">        | **pnpm + Turborepo**                  | One repository for all parts, fast builds                            |
 | <img src="https://cdn.simpleicons.org/vitest" width="20" alt="">                  | **Vitest, Jest, Playwright, axe**     | Unit, API, browser, design and accessibility tests                   |
@@ -256,28 +256,24 @@ Use a Supabase project for production with the same sign-in settings as in Step 
 
 ### 2. API: Render
 
-Create a **Web Service** from the repository:
+The repository includes a Render blueprint (`render.yaml`). In Render choose **New → Blueprint**, pick the repository and fill in the values it asks for (everything from `apps/api/.env`, with `APP_URL` and `CORS_ORIGIN` set to your website address). `CRON_SECRET` is generated for you; copy it for step 4.
 
-| Setting           | Value                                                                                                                                                                        |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Root directory    | (leave empty: the repository root)                                                                                                                                           |
-| Build command     | `pnpm install --frozen-lockfile && pnpm exec turbo run build --filter=api && pnpm --filter api prisma:deploy`                                                                |
-| Start command     | `pnpm --filter api start`                                                                                                                                                    |
-| Health check path | `/api/v1/health`                                                                                                                                                             |
-| Environment       | All values from `apps/api/.env`, with `NODE_ENV=production`, `NODE_VERSION=24`, `APP_URL` and `CORS_ORIGIN` set to your website address, and `COINBOOK_FIXED_TODAY` left out |
+The blueprint builds with `turbo run build --filter=api`, applies the database migrations on every deploy, starts with `pnpm --filter api start` and uses `/api/v1/health` as the health check. `COINBOOK_FIXED_TODAY` is not set in production.
 
-The build also applies the database migrations, so the tables are always up to date.
+To use your own address for the API (e.g. `api.example.com`), add it under the service's **Settings → Custom Domains** and create the DNS record Render shows you.
 
-### 3. Website: Vercel
+### 3. Website: Netlify
 
-Import the repository:
+The repository includes `netlify.toml`, so Netlify already knows how to build the site (base `apps/web`, Node 24, pnpm 11, Next.js runtime). In Netlify choose **Add new site → Import an existing project**, pick the repository and add these environment variables:
 
-| Setting         | Value                                                                                                                                       |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Root directory  | `apps/web`                                                                                                                                  |
-| Build command   | `cd ../.. && pnpm exec turbo run build --filter=web`                                                                                        |
-| Node.js version | 24.x                                                                                                                                        |
-| Environment     | The four `NEXT_PUBLIC_*` values, with `NEXT_PUBLIC_API_URL=https://<your-api>/api/v1` and `NEXT_PUBLIC_APP_URL` set to your website address |
+| Variable                        | Value                       |
+| ------------------------------- | --------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase project URL        |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase publishable key    |
+| `NEXT_PUBLIC_API_URL`           | `https://<your-api>/api/v1` |
+| `NEXT_PUBLIC_APP_URL`           | Your website address        |
+
+To use your own domain, open **Domain management → Add a domain** and either point your domain's nameservers to Netlify or create the DNS records Netlify shows. HTTPS is set up automatically.
 
 ### 4. Daily jobs: GitHub Actions
 
