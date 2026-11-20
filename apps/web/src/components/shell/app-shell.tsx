@@ -156,8 +156,9 @@ export function MobileTopBar({ user }: { user: ShellUser }) {
   return (
     <div className="mtop">
       <Wordmark />
-      <Link href="/settings" className="av size-11" aria-label="Profil dan pengaturan">
-        {user.initials}
+      <Link href="/settings" className="av size-11">
+        <span aria-hidden="true">{user.initials}</span>
+        <span className="sr">Profil dan pengaturan</span>
       </Link>
     </div>
   );

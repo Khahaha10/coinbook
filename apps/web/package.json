@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "design:ref": "node scripts/design-ref.mjs"
+    "design:ref": "node scripts/design-ref.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@coinbook/shared": "workspace:*",
