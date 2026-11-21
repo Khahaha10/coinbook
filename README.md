@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=nextjs,react,ts,tailwind,nestjs,prisma,supabase,postgres,netlify,githubactions,pnpm" alt="Tech stack: Next.js, React, TypeScript, Tailwind CSS, NestJS, Prisma, Supabase, PostgreSQL, Netlify, GitHub Actions, pnpm">
+  <img src="https://skillicons.dev/icons?i=nextjs,react,ts,tailwind,nestjs,prisma,supabase,postgres,netlify,vercel,githubactions,pnpm" alt="Tech stack: Next.js, React, TypeScript, Tailwind CSS, NestJS, Prisma, Supabase, PostgreSQL, Netlify, Vercel, GitHub Actions, pnpm">
 </p>
 
 ---
@@ -71,7 +71,7 @@ flowchart LR
     user(["You (browser)"])
     friend(["Friend (share link)"])
     web["Website<br/>Next.js on Netlify"]
-    api["API<br/>NestJS on Render"]
+    api["API<br/>NestJS on Vercel (serverless)"]
     auth["Sign-in<br/>Supabase Auth"]
     db[("Database<br/>Supabase Postgres")]
     gh["Scheduled jobs<br/>GitHub Actions"]
@@ -108,7 +108,7 @@ What happens when you mark a bill as paid:
 | <img src="https://cdn.simpleicons.org/resend/000000/ffffff" width="20" alt="">    | **Resend**                            | The same notifications by email                                      |
 | <img src="https://cdn.simpleicons.org/githubactions" width="20" alt="">           | **GitHub Actions**                    | Checks on every push, daily reminder and clean-up jobs               |
 | <img src="https://cdn.simpleicons.org/netlify" width="20" alt="">                 | **Netlify**                           | Hosting the website                                                  |
-| <img src="https://cdn.simpleicons.org/render/000000/ffffff" width="20" alt="">    | **Render**                            | Hosting the API                                                      |
+| <img src="https://cdn.simpleicons.org/vercel/000000/ffffff" width="20" alt="">    | **Vercel**                            | Hosting the API (serverless function)                                |
 | <img src="https://cdn.simpleicons.org/turborepo/EF4444" width="20" alt="">        | **pnpm + Turborepo**                  | One repository for all parts, fast builds                            |
 | <img src="https://cdn.simpleicons.org/vitest" width="20" alt="">                  | **Vitest, Jest, Playwright, axe**     | Unit, API, browser, design and accessibility tests                   |
 
@@ -248,19 +248,24 @@ This replaces that account's data with the demo data. Add `COINBOOK_FIXED_TODAY=
 
 ## Putting it online
 
-Everything runs on free plans. **Free-plan limits change over time, so check each provider before you deploy.** Render's free API server sleeps when nobody uses it (the first request then takes a little longer), and free Supabase projects pause after a period without activity.
+Everything runs on free plans. **Free-plan limits change over time, so check each provider before you deploy.** The serverless API needs a few seconds for the first request after a quiet period, and free Supabase projects pause after a period without activity.
 
 ### 1. Database: Supabase
 
 Use a Supabase project for production with the same sign-in settings as in Step 2. Add `https://<your-website>/auth/callback` to the redirect URLs and set the Site URL to your website. To send many sign-in emails, set up your own SMTP under **Authentication → Emails**.
 
-### 2. API: Render
+### 2. API: Vercel (serverless)
 
-The repository includes a Render blueprint (`render.yaml`). In Render choose **New → Blueprint**, pick the repository and fill in the values it asks for (everything from `apps/api/.env`, with `APP_URL` and `CORS_ORIGIN` set to your website address). `CRON_SECRET` is generated for you; copy it for step 4.
+The API runs as a serverless function on Vercel's free Hobby plan (no credit card). `apps/api/vercel.json` already holds the build settings; the function entry is `apps/api/api/index.js`, which loads the compiled `src/serverless.ts`.
 
-The blueprint builds with `turbo run build --filter=api`, applies the database migrations on every deploy, starts with `pnpm --filter api start` and uses `/api/v1/health` as the health check. `COINBOOK_FIXED_TODAY` is not set in production.
+1. Sign in at [vercel.com](https://vercel.com) with GitHub, choose **Add New → Project** and import the repository.
+2. Set **Root Directory** to `apps/api`. Leave the framework on **Other**; build and install commands come from `vercel.json`.
+3. Add the environment variables: everything from `apps/api/.env` except `PORT` and `COINBOOK_FIXED_TODAY`, with `NODE_ENV=production` and `APP_URL` / `CORS_ORIGIN` set to your website address.
+4. Deploy. The build also applies the database migrations. Check `https://<project>.vercel.app/api/v1/health`.
 
-To use your own address for the API (e.g. `api.example.com`), add it under the service's **Settings → Custom Domains** and create the DNS record Render shows you.
+To use your own address (e.g. `api.example.com`), add it under **Settings → Domains** and create the DNS record Vercel shows you.
+
+Good to know: the first request after a quiet period takes a few seconds (the API starts up), and rate limits are counted per running instance. A long-running alternative is a Render web service (`render.yaml` blueprint), which needs a card for verification.
 
 ### 3. Website: Netlify
 
@@ -280,14 +285,14 @@ To use your own domain, open **Domain management → Add a domain** and either p
 Two workflows are already included: **bill reminders** every day at 07:00 WIB and **demo clean-up** at 03:00 WIB. In the repository settings, under **Secrets and variables → Actions**, add:
 
 - `API_URL`: `https://<your-api>/api/v1`
-- `CRON_SECRET`: the same value as on Render
+- `CRON_SECRET`: the same value as on Vercel
 
 You can also start both jobs by hand from the **Actions** tab.
 
 ### 5. Telegram reminders (optional)
 
 1. In Telegram, open [@BotFather](https://t.me/BotFather), send `/newbot` and follow the steps. You get a **token** and a **username**.
-2. On Render, set `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` (without `@`) and `TELEGRAM_WEBHOOK_SECRET` (a random string of letters, digits, `_` or `-`).
+2. On Vercel, set `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` (without `@`) and `TELEGRAM_WEBHOOK_SECRET` (a random string of letters, digits, `_` or `-`).
 3. Once the API is online, connect the bot to it once, from a computer whose `apps/api/.env` has the same token and secret:
    ```bash
    pnpm build
